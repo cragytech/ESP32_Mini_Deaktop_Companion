@@ -21,5 +21,12 @@ public:
     InputEvent getEvent();
 
 private:
+    static volatile uint8_t currentState;
+    static volatile bool stateChanged;
+
+    InputEvent currentEvent = InputEvent::None;
+
     static void IRAM_ATTR encoderISR();
+    InputEvent currentEvent = InputEvent::None;
+
 };
