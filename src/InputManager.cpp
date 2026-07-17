@@ -37,6 +37,27 @@ void InputManager::begin()
         encoderISR,
         CHANGE);
 }
+
+void InputManager::pushEvent(InputEvent event)
+{
+    uint8_t nextHead = (head + 1) % EVENT_QUEUE_SIZE;
+    if(nextHead == tail)
+    {
+        return;
+        // Queue full
+    } 
+    eventQueue[head] = event;
+    head = nextHead; 
+}
+
+InputEvent InputManager::getEvent()
+{
+    if(head == tail) return InputEvent::None;
+    InputEvent event = eventQueue[tail];
+    tail = (tail +1)% EVENT_QUEUE_SIZE;
+    return event;
+}
+
 const int8_t encoderTable[16] =
 {
      0, -1,  1,  0,
@@ -44,6 +65,7 @@ const int8_t encoderTable[16] =
     -1,  0,  0,  1,
      0,  1, -1,  0
 };
+
 void InputManager::updateEncoder()
 {
     if (!stateChanged)
@@ -62,15 +84,15 @@ void InputManager::updateEncoder()
     {
         encoderSteps += movement;
 
-        if (encoderSteps >= 2)
+        if (encoderSteps >= ENCODER_STEPS_PER_DETENT)
         {
             encoderSteps = 0;
-            currentEvent = InputEvent::EncoderCCW;
+            pushEvent(InputEvent::EncoderCCW);
         }
-        else if (encoderSteps <= -2)
+        else if (encoderSteps <= -ENCODER_STEPS_PER_DETENT)
         {
             encoderSteps = 0;
-            currentEvent = InputEvent::EncoderCW;
+            pushEvent(InputEvent::EncoderCW);
         }
     }
 }
@@ -94,8 +116,8 @@ void InputManager::updateButton()
             else
             {
                 uint32_t duration = millis() - buttonPressTime;
-                if(duration >= LONG_PRESS_TIME) currentEvent = InputEvent::ButtonLongPress;
-                else currentEvent = InputEvent::ButtonClick;
+                if(duration >= LONG_PRESS_TIME) pushEvent(InputEvent::ButtonLongPress);
+                else pushEvent(InputEvent::ButtonClick);
             }
         }
     }
@@ -105,11 +127,4 @@ void InputManager::update()
 {
     updateEncoder();
     updateButton();
-}
-
-InputEvent InputManager::getEvent()
-{
-    InputEvent event = currentEvent;
-    currentEvent = InputEvent::None;
-    return event;
 }

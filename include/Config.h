@@ -14,8 +14,3 @@ constexpr uint8_t ENCODER_SW_PIN = 19;
 // ===========================================================
 constexpr uint8_t SCREEN_WIDTH = 128;
 constexpr uint8_t SCREEN_HEIGHT = 64;
-
-//============================================================
-//Long Press Time
-// ===========================================================
-constexpr uint32_t LONG_PRESS_TIME = 400; // milliseconds
