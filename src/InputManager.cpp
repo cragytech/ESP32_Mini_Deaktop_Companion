@@ -6,7 +6,7 @@ volatile bool InputManager::stateChanged = false;
 
 void IRAM_ATTR InputManager::encoderISR()
 {
-    uint8_t clk = digitalRead(ENOCDER_CLK_PIN);
+    uint8_t clk = digitalRead(ENCODER_CLK_PIN);
     uint8_t dt = digitalRead(ENCODER_DT_PIN);
 
     currentState = (clk << 1) | dt;
@@ -16,54 +16,90 @@ void IRAM_ATTR InputManager::encoderISR()
 
 void InputManager::begin()
 {
-    pinMode(ENOCDER_CLK_PIN,INPUT_PULLUP);
-    pinMode(ENCODER_DT_PIN,INPUT_PULLUP);
-    pinMode(ENCODER_SW_PIN,INPUT_PULLUP);
+    pinMode(ENCODER_CLK_PIN, INPUT_PULLUP);
+    pinMode(ENCODER_DT_PIN, INPUT_PULLUP);
+    pinMode(ENCODER_SW_PIN, INPUT_PULLUP);
+
+    currentState =
+        (digitalRead(ENCODER_CLK_PIN) << 1) |
+         digitalRead(ENCODER_DT_PIN);
+
+    previousState = currentState;
+    lastButtonState = digitalRead(ENCODER_SW_PIN);
 
     attachInterrupt(
-        digitalPinToInterrupt(ENOCDER_CLK_PIN),
+        digitalPinToInterrupt(ENCODER_CLK_PIN),
         encoderISR,
-        CHANGE
-    );
-}
+        CHANGE);
 
+    attachInterrupt(
+        digitalPinToInterrupt(ENCODER_DT_PIN),
+        encoderISR,
+        CHANGE);
+}
+const int8_t encoderTable[16] =
+{
+     0, -1,  1,  0,
+     1,  0,  0, -1,
+    -1,  0,  0,  1,
+     0,  1, -1,  0
+};
 void InputManager::updateEncoder()
 {
-    if(stateChanged)
+    if (!stateChanged)
+        return;
+
+    uint8_t state = currentState;
+    stateChanged = false;
+
+    uint8_t transition = (previousState << 2) | state;
+
+    previousState = state;
+
+    int8_t movement = encoderTable[transition];
+
+    if (movement != 0)
     {
-        stateChanged = false;
-    
-        bool clk = (currentState >> 1) & 0x01;
-        bool dt = currentState & 0x01;
-    
-        if(clk == dt) currentEvent = InputEvent::EncoderCW;
-        else currentEvent = InputEvent::EncoderCCW;
+        encoderSteps += movement;
+
+        if (encoderSteps >= 2)
+        {
+            encoderSteps = 0;
+            currentEvent = InputEvent::EncoderCCW;
+        }
+        else if (encoderSteps <= -2)
+        {
+            encoderSteps = 0;
+            currentEvent = InputEvent::EncoderCW;
+        }
     }
 }
 
 void InputManager::updateButton()
 {
-    bool currentButtonState = digitalRead(ENCODER_SW_PIN);
-    //Detect press
-    if(lastButtonState == HIGH && currentButtonState == LOW)
+    bool reading = digitalRead(ENCODER_SW_PIN);
+    if(reading != lastReading)
     {
-        buttonPressed = true;
-        lastButtonState = LOW;
-        buttonPressTime = millis();
+        lastDebounceTime = millis();
     }
-    //Detect release
-    if(lastButtonState == LOW && currentButtonState == HIGH)
+    if((millis() - lastDebounceTime) >= DEBOUNCE_TIME)
     {
-        if(buttonPressed)
+        if(reading != buttonState)
         {
-            uint32_t pressDuration = millis() - buttonPressTime;
-            if(pressDuration >= LONG_PRESS_TIME) currentEvent = InputEvent::ButtonLongPress;
-            else currentEvent = InputEvent::ButtonClick;
-
-            buttonPressed = false;
-            lastButtonState = currentButtonState;
+            buttonState = reading;
+            if(buttonState == LOW)
+            {
+                buttonPressTime = millis();
+            }
+            else
+            {
+                uint32_t duration = millis() - buttonPressTime;
+                if(duration >= LONG_PRESS_TIME) currentEvent = InputEvent::ButtonLongPress;
+                else currentEvent = InputEvent::ButtonClick;
+            }
         }
     }
+    lastReading = reading;
 }
 void InputManager::update()
 {

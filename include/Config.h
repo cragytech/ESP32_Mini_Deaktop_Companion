@@ -5,7 +5,7 @@
 //============================================================
 //Rotary Encoder
 // ===========================================================
-constexpr uint8_t ENOCDER_CLK_PIN = 5;
+constexpr uint8_t ENCODER_CLK_PIN = 5;
 constexpr uint8_t ENCODER_DT_PIN = 18;
 constexpr uint8_t ENCODER_SW_PIN = 19;
 
@@ -18,4 +18,4 @@ constexpr uint8_t SCREEN_HEIGHT = 64;
 //============================================================
 //Long Press Time
 // ===========================================================
-constexpr uint32_t LONG_PRESS_TIME = 1000; // milliseconds
+constexpr uint32_t LONG_PRESS_TIME = 400; // milliseconds
