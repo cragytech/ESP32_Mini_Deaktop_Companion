@@ -27,17 +27,48 @@ void InputManager::begin()
     );
 }
 
+void InputManager::updateEncoder()
+{
+    if(stateChanged)
+    {
+        stateChanged = false;
+    
+        bool clk = (currentState >> 1) & 0x01;
+        bool dt = currentState & 0x01;
+    
+        if(clk == dt) currentEvent = InputEvent::EncoderCW;
+        else currentEvent = InputEvent::EncoderCCW;
+    }
+}
+
+void InputManager::updateButton()
+{
+    bool currentButtonState = digitalRead(ENCODER_SW_PIN);
+    //Detect press
+    if(lastButtonState == HIGH && currentButtonState == LOW)
+    {
+        buttonPressed = true;
+        lastButtonState = LOW;
+        buttonPressTime = millis();
+    }
+    //Detect release
+    if(lastButtonState == LOW && currentButtonState == HIGH)
+    {
+        if(buttonPressed)
+        {
+            uint32_t pressDuration = millis() - buttonPressTime;
+            if(pressDuration >= LONG_PRESS_TIME) currentEvent = InputEvent::ButtonLongPress;
+            else currentEvent = InputEvent::ButtonClick;
+
+            buttonPressed = false;
+            lastButtonState = currentButtonState;
+        }
+    }
+}
 void InputManager::update()
 {
-    if(!stateChanged) return;
-
-    stateChanged = false;
-
-    bool clk = (currentState >> 1) & 0x01;
-    bool dt = currentState & 0x01;
-
-    if(clk == dt) currentEvent = InputEvent::EncoderCW;
-    else currentEvent = InputEvent::EncoderCCW;
+    updateEncoder();
+    updateButton();
 }
 
 InputEvent InputManager::getEvent()

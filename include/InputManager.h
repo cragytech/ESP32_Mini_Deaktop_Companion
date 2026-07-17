@@ -18,6 +18,8 @@ class InputManager
 public:
     void begin();
     void update();
+    void updateEncoder();
+    void updateButton();
     InputEvent getEvent();
 
 private:
@@ -27,6 +29,7 @@ private:
     InputEvent currentEvent = InputEvent::None;
 
     static void IRAM_ATTR encoderISR();
-    InputEvent currentEvent = InputEvent::None;
-
+    bool lastButtonState = HIGH;
+    bool buttonPressed = false;
+    uint32_t buttonPressTime = 0;
 };
