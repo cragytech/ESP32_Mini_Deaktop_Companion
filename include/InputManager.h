@@ -1,17 +1,18 @@
 #pragma once
 
 #include <Arduino.h>
+#include "Events.h"
 
-enum class InputEvent
-{
-    None,
+// enum class InputEvent
+// {
+//     None,
 
-    EncoderCW,
-    EncoderCCW,
+//     EncoderCW,
+//     EncoderCCW,
 
-    ButtonClick,
-    ButtonLongPress
-};
+//     ButtonClick,
+//     ButtonLongPress
+// };
 
 class InputManager
 {
