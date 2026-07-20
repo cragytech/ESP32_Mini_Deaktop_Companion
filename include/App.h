@@ -2,6 +2,7 @@
 
 #include "InputManager.h"
 #include "UIManager.h"
+#include "DisplayManager.h"
 
 class App
 {
@@ -12,5 +13,5 @@ public:
 private:
     InputManager inputManager;
     UIManager uiManager;
-
+    DisplayManager displayManager;
 };
