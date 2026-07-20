@@ -10,7 +10,8 @@ enum class Screen
     Notifications,
     WiFi,
     Settings,
-    About
+    About,
+    Messages
 };
 
 enum class HomeMenuItem
@@ -25,12 +26,14 @@ enum class HomeMenuItem
 
 class UIManager
 {
-public:
+    public:
     void begin();
     void update();
     void handleEvent(InputEvent event);
     bool isDirty() const;
     void clearDirty();
+    Screen getCurrentScreen() const;
+    HomeMenuItem getSelectedItem() const;
 
 private:
 
@@ -40,6 +43,9 @@ private:
     void handleSettingsScreen(InputEvent event);
     void handleAboutScreen(InputEvent event);
     void openSelectedMenu();
+    void goToScreen(Screen screen);
+    void onEnterScreen(Screen screen);
+    void changeScreen(Screen newScreen);
 
     void goToHome();
     bool screenDirty = true;
@@ -48,8 +54,6 @@ private:
     Screen currentScreen = Screen::Splash;
     // uint8_t selectedIndex = 0;
 
-    Screen getCurrentScreen() const;
-    HomeMenuItem getSelectedItem() const;
 
     HomeMenuItem selectedItem = HomeMenuItem::Notification;
 };

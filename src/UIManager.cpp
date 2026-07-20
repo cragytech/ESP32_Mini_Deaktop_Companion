@@ -1,7 +1,5 @@
 #include "UIManager.h"
 
-
-
 Screen UIManager::getCurrentScreen() const
 {
     return currentScreen;
@@ -24,8 +22,47 @@ void UIManager::clearDirty()
 
 void UIManager::goToHome()
 {
-    currentScreen = Screen::Home;
+    changeScreen(Screen::Home);
+}
+
+void UIManager::onEnterScreen(Screen screen)
+{
+    switch(screen)
+    {
+        case Screen::Settings:
+            Serial.println("Entered Settings");
+            break;
+        case Screen::WiFi:
+            Serial.println("Entered WiFi");
+            break;
+        case Screen::Home:
+            Serial.println("Entered Home");
+            break;
+        case Screen::About:
+            Serial.println("Entered About");
+            break;
+        case Screen::Notifications:
+            Serial.println("Entered Notifications");
+            break;
+        default:
+            break;
+    }
+}
+void UIManager::goToScreen(Screen screen)
+{
+    currentScreen = screen;
     screenDirty = true;
+    
+    onEnterScreen(screen);
+}
+
+void UIManager::changeScreen(Screen newScreen)
+{
+    if(currentScreen == newScreen) return;
+
+    currentScreen = newScreen;
+    screenDirty = true;
+    onEnterScreen(newScreen);
 }
 
 void UIManager::openSelectedMenu()
@@ -92,8 +129,6 @@ void UIManager::handleHomeScreen(InputEvent event)
             screenDirty = true;
             break;
         }
-
-
         case InputEvent::EncoderCCW:
         {
             int item = static_cast<int>(selectedItem);
@@ -103,14 +138,11 @@ void UIManager::handleHomeScreen(InputEvent event)
             screenDirty = true;
             break;
         }
-
-
         case InputEvent::ButtonClick:
             openSelectedMenu();
             break;
 
         default:
-
             break;
     }
 }
@@ -230,7 +262,23 @@ void UIManager::update()
 
 void UIManager::begin()
 {
-    currentScreen = Screen::Home;
-    // selectedIndex = 0;
-    screenDirty = true;
+   changeScreen(Screen::Home);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
