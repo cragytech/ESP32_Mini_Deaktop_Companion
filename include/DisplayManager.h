@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Config.h"
+#include "Menu.h"
+
 #include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -13,7 +15,7 @@ class DisplayManager{
 public:
     DisplayManager();
     bool begin();
-    void update(Screen screen, HomeMenuItem selectedItem, uint8_t firstVisibleItem);
+    void update(const UIState& uiState);
 
 private:
     static constexpr uint8_t SCREEN_WIDTH = 128;
@@ -27,11 +29,12 @@ private:
     void drawMenuItem(int y, const char* text, bool selected);
     void drawStatusBar();
     void drawFooter(Screen screen);
-    void drawContent(Screen screen, HomeMenuItem SelectedItem, uint8_t firstVisibleItem);
+    void drawContent(const UIState& uiState);
     void drawHome(HomeMenuItem selectedItem, uint8_t firstVisibleItem);
-    void drawWiFi();
+    void drawWiFi(WiFiMenuItem selectedItem, uint8_t firstVisibleItem);
     void drawNotifications();
     void drawMessages();
     void drawSettings();
     void drawAbout();
+    void drawList(const Menu& menu);
 };

@@ -3,6 +3,7 @@
 #include "InputManager.h"
 #include "UIManager.h"
 #include "DisplayManager.h"
+#include "WiFiManager.h"
 
 class App
 {
@@ -14,4 +15,5 @@ private:
     InputManager inputManager;
     UIManager uiManager;
     DisplayManager displayManager;
+    WiFiManager wifiManager;
 };

@@ -3,34 +3,12 @@
 #include <Arduino.h>
 #include "Events.h"
 #include "Config.h"
+#include "UIState.h"
 
-enum class Screen
-{
-    Splash,
-    Home,
-    Notifications,
-    WiFi,
-    Settings,
-    About,
-    Messages
-};
-
-enum class HomeMenuItem
-{
-    Notification,
-    WiFi,
-    Messages,
-    Settings,
-    Battery,
-    Wether,
-    Callender,
-    About,
-    Count
-};
 
 class UIManager
 {
-    public:
+public:
     void begin();
     void update();
     void handleEvent(InputEvent event);
@@ -39,6 +17,8 @@ class UIManager
     Screen getCurrentScreen() const;
     HomeMenuItem getSelectedItem() const;
     uint8_t getFirstVisibleItem() const;
+
+    const UIState& getUIState() const;
 
 private:
 
@@ -51,14 +31,19 @@ private:
     void goToScreen(Screen screen);
     void onEnterScreen(Screen screen);
     void changeScreen(Screen newScreen);
-    void updateVisibleWindow();
+    void updateVisibleWindow(uint8_t selcted, uint8_t &firstVisibleItem);
 
     void goToHome();
     bool screenDirty = true;
-
-
     Screen currentScreen = Screen::Splash;
-    // uint8_t selectedIndex = 0;
-    HomeMenuItem selectedItem = HomeMenuItem::Notification;
-    uint8_t firstVisibleItem = 0;
+
+    UIState uiState;
+
+    // const UIState& getUIState() const;
+//     //Display Menu
+//     HomeMenuItem selectedItem = HomeMenuItem::Notification;
+//     uint8_t firstVisibleItem = 0;
+//     //WiFi Menu
+//     WiFiMenuItem selectedWiFiItem = WiFiMenuItem::ScanNetworks;
+//     uint8_t firstVisibleWiFiItem = 0;
 };

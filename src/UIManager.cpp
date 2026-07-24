@@ -1,18 +1,20 @@
 #include "UIManager.h"
+const UIState& UIManager::getUIState() const{
+    return uiState;
+}
+// uint8_t UIManager::getFirstVisibleItem() const
+// {
+//     return uiState.firstVisibleHomeItem;
+// }
+// Screen UIManager::getCurrentScreen() const
+// {
+//     return currentScreen;
+// }
 
-uint8_t UIManager::getFirstVisibleItem() const
-{
-    return firstVisibleItem;
-}
-Screen UIManager::getCurrentScreen() const
-{
-    return currentScreen;
-}
-
-HomeMenuItem UIManager::getSelectedItem() const
-{
-    return selectedItem;
-}
+// HomeMenuItem UIManager::getSelectedItem() const
+// {
+//     return uiState.selectedHomeItem;
+// }
 
 bool UIManager::isDirty() const
 {
@@ -62,31 +64,31 @@ void UIManager::goToScreen(Screen screen)
 
 void UIManager::changeScreen(Screen newScreen)
 {
-    if(currentScreen == newScreen) return;
+    if(uiState.currentScreen == newScreen) return;
 
-    currentScreen = newScreen;
+    uiState.currentScreen = newScreen;
     screenDirty = true;
     onEnterScreen(newScreen);
 }
 
 void UIManager::openSelectedMenu()
 {
-    switch (selectedItem)
+    switch (uiState.selectedHomeItem)
     {
         case HomeMenuItem::Notification:
-            currentScreen = Screen::Notifications;
+            uiState.currentScreen = Screen::Notifications;
             break;
 
         case HomeMenuItem::WiFi:
-            currentScreen = Screen::WiFi;
+            uiState.currentScreen = Screen::WiFi;
             break;
 
         case HomeMenuItem::Settings:
-            currentScreen = Screen::Settings;
+            uiState.currentScreen = Screen::Settings;
             break;
 
         case HomeMenuItem::About:
-            currentScreen = Screen::About;
+            uiState.currentScreen = Screen::About;
             break;
 
         default:
@@ -98,7 +100,7 @@ void UIManager::openSelectedMenu()
 
 void UIManager::handleEvent(InputEvent event)
 {
-    switch(currentScreen)
+    switch(uiState.currentScreen)
     {
         case Screen::Splash:
         break;
@@ -126,22 +128,21 @@ void UIManager::handleHomeScreen(InputEvent event)
     {
         case InputEvent::EncoderCW:
         {
-            int item = static_cast<int>(selectedItem);
+            int item = static_cast<int>(uiState.selectedHomeItem);
             item++;
             if(item >= static_cast<int>(HomeMenuItem::Count)) item = 0;
-            selectedItem = static_cast<HomeMenuItem>(item);
-            updateVisibleWindow();
+            uiState.selectedHomeItem = static_cast<HomeMenuItem>(item);
+            updateVisibleWindow(static_cast<uint8_t>(uiState.selectedHomeItem), uiState.firstVisibleHomeItem);
             screenDirty = true;
             break;
         }
-
         case InputEvent::EncoderCCW:
         {
-            int item = static_cast<int>(selectedItem);
+            int item = static_cast<int>(uiState.selectedHomeItem);
             item--;
             if(item < 0) item = static_cast<int>(HomeMenuItem::Count) - 1;
-            selectedItem = static_cast<HomeMenuItem>(item);
-            updateVisibleWindow();
+            uiState.selectedHomeItem = static_cast<HomeMenuItem>(item);
+            updateVisibleWindow(static_cast<uint8_t>(uiState.selectedHomeItem), uiState.firstVisibleHomeItem);
             screenDirty = true;
             break;
         }
@@ -156,11 +157,56 @@ void UIManager::handleHomeScreen(InputEvent event)
 
 void UIManager::handleWiFiScreen(InputEvent event)
 {
+    switch(event){
+        case InputEvent::EncoderCW: {
+            int item = static_cast<int>(uiState.selectedWiFiItem);
+            item++;
+            if(item >= static_cast<int>(WiFiMenuItem::Count)){
+                item = 0;
+            }
+            uiState.selectedWiFiItem = static_cast<WiFiMenuItem>(item);
+            updateVisibleWindow(static_cast<uint8_t>(uiState.selectedWiFiItem), uiState.firastVisibleWiFiItem);
+            screenDirty = true;
+            break;
+        }
+        case InputEvent::EncoderCCW: {
+            int item = static_cast<int>(uiState.selectedWiFiItem);
+            item--;
+            if(item < 0){
+                item = static_cast<int>(WiFiMenuItem::Count) - 1;
+            }
+            uiState.selectedWiFiItem = static_cast<WiFiMenuItem>(item);
+            updateVisibleWindow(static_cast<uint8_t>(uiState.selectedWiFiItem), uiState.firastVisibleWiFiItem);
+            screenDirty = true;
+            break;
+        }
+        case InputEvent::ButtonClick: {
+            switch(uiState.selectedWiFiItem){
+                case WiFiMenuItem::ScanNetworks: {
+                    currentScreen = Screen::WiFiScan;
+                    screenDirty = true;
+                    break;
+                }
+                case WiFiMenuItem::Disconnect: {
+                    Serial.println("Disconnect Selected");
+                    break;
+                }
+                case WiFiMenuItem::Back: {
+                    goToHome();
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
+        default:
+            break;
+    }
     if(event == InputEvent::ButtonLongPress)
     {
         goToHome();
     }
-    return;
 }
 
 void UIManager::handleNotificationScreen(InputEvent event)
@@ -232,11 +278,11 @@ void UIManager::update()
         lastScreen = currentScreen;
     }
 
-    if(lastItem != selectedItem)
+    if(lastItem != uiState.selectedHomeItem)
     {
         Serial.print("Selected Menu: ");
 
-        switch(selectedItem)
+        switch(uiState.selectedHomeItem)
         {
             case HomeMenuItem::Notification:
                 Serial.println("Notification");
@@ -262,26 +308,28 @@ void UIManager::update()
                 break;
         }
 
-        lastItem = selectedItem;
+        lastItem = uiState.selectedHomeItem;
     }
 
 }
 
 void UIManager::begin()
 {
-   changeScreen(Screen::Home);
+    uiState.currentScreen = Screen::Home;
+    uiState.selectedHomeItem = HomeMenuItem::Notification;
+    uiState.firstVisibleHomeItem = 0;
+
+    uiState.selectedWiFiItem = WiFiMenuItem::ScanNetworks;
+    uiState.firastVisibleWiFiItem = 0;
 }
 
-void UIManager::updateVisibleWindow(){
-    uint8_t selected = static_cast<uint8_t>(selectedItem);
-    
-    //Scroll Down
-    if(selected >= firstVisibleItem + MAX_VISIBLE_ITEMS){
+void UIManager::updateVisibleWindow(uint8_t selected, uint8_t &firstVisibleItem){
+    if(selected >= firstVisibleItem + MAX_VISIBLE_ITEMS)
+    {
         firstVisibleItem = selected - MAX_VISIBLE_ITEMS + 1;
     }
-
-    //Scroll Up
-    else if(selected < firstVisibleItem){
+    else if(selected < firstVisibleItem)
+    {
         firstVisibleItem = selected;
     }
 }

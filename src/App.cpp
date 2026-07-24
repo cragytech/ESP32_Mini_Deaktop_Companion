@@ -7,22 +7,24 @@ void App::begin()
     inputManager.begin();
     uiManager.begin();
     displayManager.begin();
+    // wifiManager.begin();
+    // wifiManager.scanNetworks();
 }
-
+    
 void App::update()
 {
     inputManager.update();
 
     InputEvent event = inputManager.getEvent();
 
-    uiManager.update();
-
     if(event != InputEvent::None)
     {
         uiManager.handleEvent(event);
     }
+    uiManager.update();
+
     if(uiManager.isDirty()){
-        displayManager.update(uiManager.getCurrentScreen(), uiManager.getSelectedItem(), uiManager.getFirstVisibleItem());
+        displayManager.update(uiManager.getUIState());
         uiManager.clearDirty();
     }
 

@@ -1,0 +1,1 @@
+To add more menu items in home munu item list go to "drawHome function and add them" and dont forget to add the same in UIManager.h too.

@@ -14,30 +14,21 @@ bool DisplayManager::begin(){
     display.setTextSize(1);
     display.setTextColor(SSD1306_WHITE);
     display.display();
-
-    // display.setCursor(0,0);
-    // display.print("Letter Box");
-    // display.println();
-    // display.println("Display OK");
-    // display.display();
     return true;
 }
-
-void DisplayManager::update(Screen screen, HomeMenuItem selectedItem, uint8_t firstVisibleItem){
+//void DisplayManager::update(Screen screen, HomeMenuItem selectedItem, uint8_t firstVisibleItem){
+void DisplayManager::update(const UIState& uiState){
     display.clearDisplay();
 
     drawStatusBar();
-    drawContent(screen,selectedItem,firstVisibleItem);
-    drawFooter(screen);
+    drawContent(uiState);
+    drawFooter(uiState.currentScreen);
 
     display.display();
 }
 
 void DisplayManager::drawStatusBar(){
     display.drawLine(0,10,SCREEN_WIDTH,10,SSD1306_WHITE);
-    display.setTextSize(1);
-    display.setCursor(2,1);
-    display.print("Letter Box");
 }
 
 void DisplayManager::drawFooter(Screen screen){
@@ -51,19 +42,20 @@ void DisplayManager::drawFooter(Screen screen){
     }
 }
 
-void DisplayManager::drawContent(Screen screen, HomeMenuItem selectedItem, uint8_t firstVisibleItem)
+//void DisplayManager::drawContent(Screen screen, HomeMenuItem selectedItem, uint8_t firstVisibleItem)
+void DisplayManager::drawContent(const UIState& uiState)
 {
-    switch(screen)
+    switch(uiState.currentScreen)
     {
         case Screen::Home:
-            drawHome(selectedItem, firstVisibleItem);
+            drawHome(uiState.selectedHomeItem, uiState.firstVisibleHomeItem);
             break;
 
         case Screen::WiFi:
-            drawWiFi();
+            drawWiFi(uiState.selectedWiFiItem,uiState.firastVisibleWiFiItem);
             break;
 
-        case Screen::Messages:
+        case Screen::messages:
             drawMessages();
             break;
 
@@ -84,7 +76,7 @@ void DisplayManager::drawContent(Screen screen, HomeMenuItem selectedItem, uint8
     }
 }
 
-void DisplayManager::drawMenuItem(int y, const char* text, bool selected){
+void DisplayManager::drawMenuItem(int y, const char* text, bool selected){  //It is responsible for making selected item to be highlited
     if(selected){
         display.fillRect(0, y-1, SCREEN_WIDTH, 10, SSD1306_WHITE);
         display.setTextColor(SSD1306_BLACK);
@@ -98,8 +90,26 @@ void DisplayManager::drawMenuItem(int y, const char* text, bool selected){
     display.setTextColor(SSD1306_WHITE);
 }
 
+void DisplayManager::drawList(const Menu& menu){
+    display.setCursor(0,0);
+    display.println(menu.title);
+    display.drawLine(0, 10, SCREEN_WIDTH, 10, SSD1306_WHITE);
+    
+
+    int y = 14;
+
+    for(uint8_t i = 0; i < MAX_VISIBLE_ITEMS; i++){
+        uint8_t index = menu.firstVisibleItem + i;
+
+        if(index >= menu.itemCount) break;
+        drawMenuItem(y, menu.items[index], index == menu.selectedItem);
+        
+        y+= 10;
+    }
+}
+
 void DisplayManager::drawHome(HomeMenuItem selectedItem, uint8_t firstVisibleItem){
-    static const char* menuItem[]= 
+    static const char* homeItems[]= 
     {
         "Notifications",
         "WiFi",
@@ -111,23 +121,36 @@ void DisplayManager::drawHome(HomeMenuItem selectedItem, uint8_t firstVisibleIte
         "About"
     };
 
-    int y = 14;
-    display.println(firstVisibleItem);
-    for(int i = 0; i < MAX_VISIBLE_ITEMS; i++){
-        uint8_t menuIndex = firstVisibleItem + i;
-        if(menuIndex >= static_cast<int>(HomeMenuItem::Count)) break;
-        
-        drawMenuItem(y,menuItem[menuIndex],menuIndex == static_cast<int>(selectedItem));
-        y += 10;
-    }
- 
+    Menu homeMenu = {
+        "Home",
+        homeItems,
+        static_cast<uint8_t>(HomeMenuItem::Count),
+        static_cast<uint8_t>(selectedItem),
+        firstVisibleItem
+    };
+
+    drawList(homeMenu);
 }
 
-void DisplayManager::drawWiFi(){
-    display.setCursor(0,0);
-    display.println("WiFi");
-    display.println();
-    display.println("Scanning...");
+void DisplayManager::drawWiFi(WiFiMenuItem selectedItem, uint8_t firstVisbleItem){
+   static const char* wifiItems[]{
+    "Scan Networks",
+    "Disconnect",
+    "jio",
+    "airtel",
+    "vi",
+    "Back"
+   };
+
+   Menu menu = {
+    "WiFi",
+    wifiItems,
+    static_cast<uint8_t>(WiFiMenuItem::Count),
+    static_cast<uint8_t>(selectedItem),
+    firstVisbleItem
+   };
+
+    drawList(menu);
 }
 
 void DisplayManager::drawMessages(){
