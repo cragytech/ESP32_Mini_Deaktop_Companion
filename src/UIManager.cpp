@@ -1,5 +1,9 @@
 #include "UIManager.h"
 
+uint8_t UIManager::getFirstVisibleItem() const
+{
+    return firstVisibleItem;
+}
 Screen UIManager::getCurrentScreen() const
 {
     return currentScreen;
@@ -126,15 +130,18 @@ void UIManager::handleHomeScreen(InputEvent event)
             item++;
             if(item >= static_cast<int>(HomeMenuItem::Count)) item = 0;
             selectedItem = static_cast<HomeMenuItem>(item);
+            updateVisibleWindow();
             screenDirty = true;
             break;
         }
+
         case InputEvent::EncoderCCW:
         {
             int item = static_cast<int>(selectedItem);
             item--;
             if(item < 0) item = static_cast<int>(HomeMenuItem::Count) - 1;
             selectedItem = static_cast<HomeMenuItem>(item);
+            updateVisibleWindow();
             screenDirty = true;
             break;
         }
@@ -191,7 +198,6 @@ void UIManager::update()
 {
     static Screen lastScreen = Screen::Splash;
     static HomeMenuItem lastItem = HomeMenuItem::Notification;
-    // Serial.println("currently in upgate");
     if(lastScreen != currentScreen)
     {
         Serial.print("Current Screen: ");
@@ -258,6 +264,7 @@ void UIManager::update()
 
         lastItem = selectedItem;
     }
+
 }
 
 void UIManager::begin()
@@ -265,6 +272,19 @@ void UIManager::begin()
    changeScreen(Screen::Home);
 }
 
+void UIManager::updateVisibleWindow(){
+    uint8_t selected = static_cast<uint8_t>(selectedItem);
+    
+    //Scroll Down
+    if(selected >= firstVisibleItem + MAX_VISIBLE_ITEMS){
+        firstVisibleItem = selected - MAX_VISIBLE_ITEMS + 1;
+    }
+
+    //Scroll Up
+    else if(selected < firstVisibleItem){
+        firstVisibleItem = selected;
+    }
+}
 
 
 

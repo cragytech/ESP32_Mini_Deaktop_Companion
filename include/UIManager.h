@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include "Events.h"
+#include "Config.h"
 
 enum class Screen
 {
@@ -20,6 +21,9 @@ enum class HomeMenuItem
     WiFi,
     Messages,
     Settings,
+    Battery,
+    Wether,
+    Callender,
     About,
     Count
 };
@@ -34,6 +38,7 @@ class UIManager
     void clearDirty();
     Screen getCurrentScreen() const;
     HomeMenuItem getSelectedItem() const;
+    uint8_t getFirstVisibleItem() const;
 
 private:
 
@@ -46,6 +51,7 @@ private:
     void goToScreen(Screen screen);
     void onEnterScreen(Screen screen);
     void changeScreen(Screen newScreen);
+    void updateVisibleWindow();
 
     void goToHome();
     bool screenDirty = true;
@@ -53,7 +59,6 @@ private:
 
     Screen currentScreen = Screen::Splash;
     // uint8_t selectedIndex = 0;
-
-
     HomeMenuItem selectedItem = HomeMenuItem::Notification;
+    uint8_t firstVisibleItem = 0;
 };

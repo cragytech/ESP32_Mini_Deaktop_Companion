@@ -14,3 +14,7 @@ constexpr uint8_t ENCODER_SW_PIN = 19;
 // ===========================================================
 constexpr uint8_t SCREEN_WIDTH = 128;
 constexpr uint8_t SCREEN_HEIGHT = 64;
+//============================================================
+//UIManager 
+// ===========================================================
+constexpr uint8_t MAX_VISIBLE_ITEMS = 4;

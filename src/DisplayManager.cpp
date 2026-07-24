@@ -15,68 +15,112 @@ bool DisplayManager::begin(){
     display.setTextColor(SSD1306_WHITE);
     display.display();
 
-    display.setCursor(0,0);
-    display.print("Letter Box");
-    display.println();
-    display.println("Display OK");
-    display.display();
+    // display.setCursor(0,0);
+    // display.print("Letter Box");
+    // display.println();
+    // display.println("Display OK");
+    // display.display();
     return true;
 }
 
-void DisplayManager::update(Screen screen, HomeMenuItem selectedItem){
+void DisplayManager::update(Screen screen, HomeMenuItem selectedItem, uint8_t firstVisibleItem){
     display.clearDisplay();
-    switch (screen)
-    {
-    case Screen::Home:
-        drawHome(selectedItem);
-        break;
-    
-    case Screen::WiFi:
-        drawWiFi();
-        break;
-    
-    case Screen::Messages:
-        drawMessages();
-        break;
-    
-    case Screen::Notifications:
-        drawNotifications();
-        break;
-    
-    case Screen::Settings:
-        drawSettings();
-        break;
 
-    case Screen::About:
-        drawAbout();
-        break;
-   
-    default:
-        break;
-    }
+    drawStatusBar();
+    drawContent(screen,selectedItem,firstVisibleItem);
+    drawFooter(screen);
 
     display.display();
 }
 
+void DisplayManager::drawStatusBar(){
+    display.drawLine(0,10,SCREEN_WIDTH,10,SSD1306_WHITE);
+    display.setTextSize(1);
+    display.setCursor(2,1);
+    display.print("Letter Box");
+}
 
-void DisplayManager::drawHome(HomeMenuItem selectedItem){
+void DisplayManager::drawFooter(Screen screen){
+    display.drawLine(0,54,SCREEN_WIDTH,54,SSD1306_WHITE);
+    display.setCursor(0,56);
+    if(screen == Screen::Home){
+        display.print("Rotate Select");
+    }
+    else{
+        display.print("Hold Btn : Home");
+    }
+}
+
+void DisplayManager::drawContent(Screen screen, HomeMenuItem selectedItem, uint8_t firstVisibleItem)
+{
+    switch(screen)
+    {
+        case Screen::Home:
+            drawHome(selectedItem, firstVisibleItem);
+            break;
+
+        case Screen::WiFi:
+            drawWiFi();
+            break;
+
+        case Screen::Messages:
+            drawMessages();
+            break;
+
+        case Screen::Notifications:
+            drawNotifications();
+            break;
+
+        case Screen::Settings:
+            drawSettings();
+            break;
+
+        case Screen::About:
+            drawAbout();
+            break;
+
+        default:
+            break;
+    }
+}
+
+void DisplayManager::drawMenuItem(int y, const char* text, bool selected){
+    if(selected){
+        display.fillRect(0, y-1, SCREEN_WIDTH, 10, SSD1306_WHITE);
+        display.setTextColor(SSD1306_BLACK);
+    }
+    else{
+        display.setTextColor(SSD1306_WHITE);
+    }
+    display.setCursor(4,y);
+    display.print(text);
+    
+    display.setTextColor(SSD1306_WHITE);
+}
+
+void DisplayManager::drawHome(HomeMenuItem selectedItem, uint8_t firstVisibleItem){
     static const char* menuItem[]= 
     {
         "Notifications",
         "WiFi",
         "Messages",
         "Settings",
+        "Battery",
+        "Wether",
+        "Callender",
         "About"
     };
 
-    display.setCursor(0,0);
-    for(int i = 0; i < 5; i++){
-        if(i == static_cast<int>(selectedItem)) 
-        display.print("> ");
-        else display.print(" ");
-
-        display.println(menuItem[i]);
+    int y = 14;
+    display.println(firstVisibleItem);
+    for(int i = 0; i < MAX_VISIBLE_ITEMS; i++){
+        uint8_t menuIndex = firstVisibleItem + i;
+        if(menuIndex >= static_cast<int>(HomeMenuItem::Count)) break;
+        
+        drawMenuItem(y,menuItem[menuIndex],menuIndex == static_cast<int>(selectedItem));
+        y += 10;
     }
+ 
 }
 
 void DisplayManager::drawWiFi(){

@@ -22,7 +22,7 @@ void App::update()
         uiManager.handleEvent(event);
     }
     if(uiManager.isDirty()){
-        displayManager.update(uiManager.getCurrentScreen(), uiManager.getSelectedItem());
+        displayManager.update(uiManager.getCurrentScreen(), uiManager.getSelectedItem(), uiManager.getFirstVisibleItem());
         uiManager.clearDirty();
     }
 
