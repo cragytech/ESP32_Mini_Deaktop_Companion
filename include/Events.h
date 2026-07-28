@@ -8,6 +8,7 @@ enum class InputEvent
     ButtonClick,
     ButtonLongPress
 };
+
 enum class Screen
 {
     Splash,
@@ -21,15 +22,6 @@ enum class Screen
     Settings,
     About
 };
-enum class WiFiMenuItem{
-    ScanNetworks,
-    Disconnect,
-    jio,
-    airtel,
-    vi,
-    Back,
-    Count
-};
 enum class HomeMenuItem{
     Notification,
     WiFi,
@@ -40,4 +32,17 @@ enum class HomeMenuItem{
     Callender,
     About,
     Count
+};
+enum class WiFiMenuItem{
+    ScanNetworks,
+    SavedNetwork,
+    Disconnect,
+    Back,
+    Count
+};
+enum class UIAction{
+    None,
+    StartWiFiScan,
+    ConnectWiFi,
+    DisconnectWiFi
 };

@@ -3,17 +3,6 @@
 #include <Arduino.h>
 #include "Events.h"
 
-// enum class InputEvent
-// {
-//     None,
-
-//     EncoderCW,
-//     EncoderCCW,
-
-//     ButtonClick,
-//     ButtonLongPress
-// };
-
 class InputManager
 {
 public:

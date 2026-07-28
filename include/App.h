@@ -4,6 +4,7 @@
 #include "UIManager.h"
 #include "DisplayManager.h"
 #include "WiFiManager.h"
+#include "UIState.h"
 
 class App
 {
@@ -16,4 +17,5 @@ private:
     UIManager uiManager;
     DisplayManager displayManager;
     WiFiManager wifiManager;
+    UIState uiState;
 };
