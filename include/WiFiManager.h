@@ -34,11 +34,14 @@ class WiFiManager{
         const String& getCurrentSSID() const; //store the current connected network
         WiFiState getState() const;
         const String* getSSIDList() const;
+        void clearScanCompleteFlag();
     private:
         static constexpr uint8_t MAX_NETWORKS = 20;
+        
         int networkCount = 0;
         bool scanning = false;
         bool scanComplete = false;
+
         String ssidList[MAX_NETWORKS];
         int rssiList[MAX_NETWORKS];
         wifi_auth_mode_t authList[MAX_NETWORKS];

@@ -3,24 +3,26 @@
 void App::begin()
 {
     Serial.begin(115200);
-
     inputManager.begin();
     uiManager.begin();
     displayManager.begin();
     wifiManager.begin();
     displayManager.setWiFiManager(&wifiManager);
 }
-
 void App::update()
 {
-    DisplayData displayData;
     inputManager.update();
-
     InputEvent event = inputManager.getEvent();
+    
+    if(wifiManager.isScanComplete()){
+        uiState.availableNetworkCount = wifiManager.getNetworkCount();
+    }
+    wifiManager.update();
+    uiManager.update();
 
     if(event != InputEvent::None)
     {
-        uiManager.handleEvent(event);
+        uiManager.handleEvent(event, wifiManager.getNetworkCount());
     }
 
     switch(uiManager.getPendingAction())
@@ -29,32 +31,47 @@ void App::update()
             wifiManager.scanNetworks();
             uiManager.clearPendingAction();
             break;
+
         case UIAction::ConnectWiFi:
-            Serial.println("Entered in connnect wifi mode and app.cpp");
             uiManager.clearPendingAction();
             Serial.println("trying to connect to wifi");
             break;
+
         case UIAction::DisconnectWiFi:
             wifiManager.disconnect();
             uiManager.clearPendingAction();
             break;
+
+        case UIAction::SelectWiFiNetwork:
+            uiState.selectedSSID = wifiManager.getSSIDString(uiManager.getUIState().selectedNetwork);
+            Serial.println(uiState.selectedSSID);
+            uiManager.goToScreen(Screen::WiFiPassword);
+            uiManager.clearPendingAction();
+            break;
+
         default:
             break;
     }
+
     wifiManager.update();
     uiManager.update();
-    displayData.uiState = uiManager.getUIState();
-    displayData.wifiScanning = wifiManager.isScanning();
-    displayData.networkCount = wifiManager.getNetworkCount();
-    displayData.ssidList = wifiManager.getSSIDList();
+
+    //-----Scan completed-----------
+    if(wifiManager.isScanComplete()){
+        uiManager.onScanCompleted(wifiManager.getNetworkCount());
+        wifiManager.clearScanCompleteFlag();
+    }
+    //-----Build DisplayData--------
+    DisplayData displayData;
+
+    displayData.uiState             = uiManager.getUIState();
+    displayData.wifiScanning        = wifiManager.isScanning();
+    uiState.availableNetworkCount   = wifiManager.getNetworkCount();
+    displayData.networkCount        = wifiManager.getNetworkCount();
+    displayData.ssidList            = wifiManager.getSSIDList();
 
     if(uiManager.isDirty()){
         displayManager.update(displayData);
         uiManager.clearDirty();
     }
-
-    if(wifiManager.isScanComplete()){
-        uiState.availableNetworkCount = wifiManager.getNetworkCount();
-    }
-
 }

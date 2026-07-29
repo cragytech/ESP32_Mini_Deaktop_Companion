@@ -7,6 +7,11 @@ int WiFiManager::getNetworkCount() const{
 bool WiFiManager::isScanComplete() const{
     return scanComplete;
 }
+
+void WiFiManager::clearScanCompleteFlag(){
+    scanComplete = false;
+}
+
 bool WiFiManager::isScanning() const{
     return scanning;
 }
@@ -54,7 +59,6 @@ void WiFiManager::begin(){
     WiFi.disconnect(true);
     delay(200);
     state = WiFiState::Idle;
-    Serial.println("WiFi Manager Ready");
 }
 
 void WiFiManager::scanNetworks(){
@@ -71,32 +75,8 @@ void WiFiManager::scanNetworks(){
     Serial.println("Scanning for WiFi networks...");
 }
 
-// void WiFiManager::scanNetworks(){
-//     state = WiFiState::Scanning;
-//     Serial.println("Scanning...");
-//     // It will return number of WiFi networks found
-//     networkCount = WiFi.scanNetworks();
-//     // Triming no of networks to MAX_NETWORKS
-//     if(networkCount > MAX_NETWORKS){
-//         networkCount = MAX_NETWORKS;
-//     }
-    
-//     for(int i = 0; i < networkCount; i++){
-//         ssidList[i] = WiFi.SSID(i);
-//         rssiList[i] = WiFi.RSSI(i);
-//         authList[i] = WiFi.encryptionType(i);
-//         Serial.print(ssidList[i]);
-//         Serial.print("/t");
-//         Serial.print(rssiList[i]);
-//         Serial.print("/t");
-//         Serial.println(authList[i]);
-//     }
-//     state = WiFiState::ScanComplete;
-// }
-
 bool WiFiManager::connect(const String& ssid, const String& passward){
     if(ssid.isEmpty()) return false;
-    
     
     currentSSID = ssid;
     currentPassward = passward;
@@ -105,8 +85,7 @@ bool WiFiManager::connect(const String& ssid, const String& passward){
     WiFi.begin(currentSSID.c_str(), currentPassward.c_str());
     connectStartTime = millis();
     state = WiFiState::Connecting;
-    return true;
-    
+    return true;  
 }
 
 void WiFiManager::update(){
@@ -140,15 +119,11 @@ void WiFiManager::update(){
             }
             break;
         }
-
         case WiFiState::Connecting:
         {
             break;
         }
-
         default:
-            break;
-        
+            break;  
     }
-
 }

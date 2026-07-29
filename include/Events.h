@@ -44,5 +44,6 @@ enum class UIAction{
     None,
     StartWiFiScan,
     ConnectWiFi,
-    DisconnectWiFi
+    DisconnectWiFi,
+    SelectWiFiNetwork
 };

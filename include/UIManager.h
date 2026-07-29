@@ -5,6 +5,7 @@
 #include "Config.h"
 #include "UIState.h"
 #include "WiFiManager.h"
+#include "DisplayData.h"
 
 
 class UIManager
@@ -12,10 +13,11 @@ class UIManager
 public:
     void begin();
     void update();
-    void handleEvent(InputEvent event);
+    void handleEvent(InputEvent event, uint8_t networkCount);
     bool isDirty() const;
     void clearDirty();
     void goToScreen(Screen screen);
+    void onScanCompleted(int networkCount);
     const UIState& getUIState() const;
 
     UIAction getPendingAction();
@@ -26,7 +28,7 @@ private:
 
     void handleHomeScreen(InputEvent event);
     void handleWiFiScreen(InputEvent event);
-    void handleWiFiScanScreen(InputEvent event);
+    void handleWiFiScanScreen(InputEvent event, uint8_t networkCount);
     void handleNotificationScreen(InputEvent event);
     void handleSettingsScreen(InputEvent event);
     void handleAboutScreen(InputEvent event);
@@ -34,12 +36,13 @@ private:
     void onEnterScreen(Screen screen);
     void changeScreen(Screen newScreen);
     void updateVisibleWindow(uint8_t selcted, uint8_t &firstVisibleItem);
-
     void goToHome();
+    void setSelectedSSID(const String& ssid);
     bool screenDirty = true;
-    Screen currentScreen = Screen::Splash;
-
     UIState uiState;
+    // uiState.currentScreen = Screen::Splash;
+
+    DisplayData data;
     UIAction pendingAction = UIAction::None;
 
 };

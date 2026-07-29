@@ -5,6 +5,23 @@ DisplayManager::DisplayManager()    //Initializer list
 {
 }
 
+String DisplayManager::trimTextToFit(String text, int maxWidth){
+    int16_t x1, y1;
+    uint16_t w, h;
+
+    display.getTextBounds(text, 0,0,&x1,&y1,&w,&h);
+
+    if(w <= maxWidth){
+        return text;
+    }
+
+    while(text.length() > 0 && w > maxWidth){
+        text.remove(text.length() - 1);
+        display.getTextBounds(text + "...", 0, 0, &x1, &y1, &w, &h);
+    }
+    return text + "...";
+
+}
 void DisplayManager::setWiFiManager(const WiFiManager *manager){
     wifiManager = manager;
 }
@@ -48,8 +65,8 @@ void DisplayManager::drawMenuItem(int y, const char* text, bool selected){  //It
         display.setTextColor(SSD1306_WHITE);
     }
     display.setCursor(4,y);
-    display.print(text);
-    
+    String trimedText = trimTextToFit(text,SCREEN_WIDTH-4);
+    display.print(trimedText);
     display.setTextColor(SSD1306_WHITE);
 }
 
@@ -175,33 +192,40 @@ void DisplayManager::drawWiFi(WiFiMenuItem selectedItem, uint8_t firstVisbleItem
         return;
     }
 }
+
 //============================================================
 //Draw the list of scaned network
 // ===========================================================
 void DisplayManager::drawWiFiScan(const DisplayData& data){
+    display.clearDisplay();
     display.setTextSize(1);
     display.setCursor(0,0);
     display.println("Available Networks");
     display.drawLine(0, 10, SCREEN_WIDTH, 10, SSD1306_WHITE);
-    
-    if(wifiManager->getNetworkCount() == 0){
+    Serial.println("draw wifi scan");
+
+    if(data.wifiScanning){
         display.setCursor(0,20);
+        // display.getTextBounds()
+        display.println("Scanning.....");
+        return;
+    }
+    if(data.networkCount == 0){
+        display.setCursor(0,40);
         display.println("No Networks Found");
         return;
     }
     for(uint8_t i = 0; i < MAX_VISIBLE_ITEMS; i++)
     {
         uint8_t index = data.uiState.firstVisibleNetwork + i;
-        
+
         if(index >= data.networkCount)
         break;
         
         int y = 15 + i * 10;
-
-        drawMenuItem(y, data.ssidList[index].c_str(), index == data.uiState.selectedNetork);
+        drawMenuItem(y, data.ssidList[index].c_str(), index == data.uiState.selectedNetwork);
     }
 }
-
 
 void DisplayManager::drawMessages(){
     display.setCursor(0,0);

@@ -5,6 +5,7 @@
 #include "WiFiManager.h"
 #include "UIManager.h"
 #include "DisplayData.h"
+#include "UIState.h"
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -38,6 +39,7 @@ private:
     void drawSettings();
     void drawAbout();
     void drawList(const Menu& menu);
+    String trimTextToFit(String text, int maxWidth);
 
     const WiFiManager *wifiManager = nullptr; // Pointer to WiFiManager instance
 };

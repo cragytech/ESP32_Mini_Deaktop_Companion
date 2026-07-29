@@ -16,6 +16,7 @@ struct UIState
 
     // Available Networks
     uint8_t availableNetworkCount = 0;
-    uint8_t selectedNetork = 0;
+    uint8_t selectedNetwork = 0;
     uint8_t firstVisibleNetwork = 0;
+    String selectedSSID = "";
 };

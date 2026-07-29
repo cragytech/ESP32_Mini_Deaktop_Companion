@@ -3,7 +3,9 @@
 const UIState& UIManager::getUIState() const{
     return uiState;
 }
-
+void UIManager::setSelectedSSID(const String& ssid){
+    uiState.selectedSSID = ssid;
+}
 UIAction UIManager::getPendingAction(){
     return pendingAction;
 }
@@ -25,6 +27,14 @@ void UIManager::clearDirty()
 void UIManager::goToHome()
 {
     changeScreen(Screen::Home);
+}
+
+void UIManager::onScanCompleted(int networkCount){
+    uiState.availableNetworkCount = networkCount;
+    uiState.selectedNetwork = 0;
+    uiState.firstVisibleNetwork = 0;
+
+    screenDirty = true;
 }
 
 void UIManager::onEnterScreen(Screen screen)
@@ -52,7 +62,7 @@ void UIManager::onEnterScreen(Screen screen)
 }
 void UIManager::goToScreen(Screen screen)
 {
-    currentScreen = screen;
+    uiState.currentScreen = screen;
     screenDirty = true;
     
     onEnterScreen(screen);
@@ -97,7 +107,7 @@ void UIManager::openSelectedMenu()
 //============================================================
 //It handles the event
 // ===========================================================
-void UIManager::handleEvent(InputEvent event)
+void UIManager::handleEvent(InputEvent event, uint8_t networkCount)
 {
     switch(uiState.currentScreen)
     {
@@ -110,7 +120,8 @@ void UIManager::handleEvent(InputEvent event)
             handleWiFiScreen(event);
             break;
         case Screen::WiFiScan:
-            handleWiFiScanScreen(event);
+        Serial.println("handle event wifi scan");
+            handleWiFiScanScreen(event, networkCount);
             break;
         case Screen::Notifications:
             handleNotificationScreen(event);
@@ -168,10 +179,12 @@ void UIManager::handleWiFiScreen(InputEvent event)
     switch(event){
         case InputEvent::EncoderCW: {
             int item = static_cast<int>(uiState.selectedWiFiItem);
+            
             item++;
             if(item >= static_cast<int>(WiFiMenuItem::Count)){
                 item = 0;
             }
+
             uiState.selectedWiFiItem = static_cast<WiFiMenuItem>(item);
             updateVisibleWindow(static_cast<uint8_t>(uiState.selectedWiFiItem), uiState.firastVisibleWiFiItem);
             screenDirty = true;
@@ -179,10 +192,12 @@ void UIManager::handleWiFiScreen(InputEvent event)
         }
         case InputEvent::EncoderCCW: {
             int item = static_cast<int>(uiState.selectedWiFiItem);
+
             item--;
             if(item < 0){
                 item = static_cast<int>(WiFiMenuItem::Count) - 1;
             }
+
             uiState.selectedWiFiItem = static_cast<WiFiMenuItem>(item);
             updateVisibleWindow(static_cast<uint8_t>(uiState.selectedWiFiItem), uiState.firastVisibleWiFiItem);
             screenDirty = true;
@@ -223,10 +238,8 @@ void UIManager::handleWiFiScreen(InputEvent event)
 //============================================================
 //Handle WiFi Scan Screen
 // ===========================================================
-void UIManager::handleWiFiScanScreen(InputEvent event)
+void UIManager::handleWiFiScanScreen(InputEvent event, uint8_t networkCount)
 {
-    uint8_t networkCount = uiState.availableNetworkCount;
-
     if(networkCount == 0)
     {
         if(event == InputEvent::ButtonLongPress)
@@ -235,39 +248,42 @@ void UIManager::handleWiFiScanScreen(InputEvent event)
         }
         return;
     }
-
     switch (event)
     {
         case InputEvent::EncoderCW:
         {
-            uiState.selectedNetork++;
-            if(uiState.selectedNetork >= networkCount)
+            int item = uiState.selectedNetwork;
+            item++;
+            if(item >= networkCount)
             {
-                uiState.selectedNetork = 0;
+                item = 0;
             }
-            updateVisibleWindow(uiState.selectedNetork, uiState.firstVisibleNetwork);
+            uiState.selectedNetwork = item;
+            updateVisibleWindow(uiState.selectedNetwork, uiState.firstVisibleNetwork);
             screenDirty = true;
             break;
         }
         case InputEvent::EncoderCCW:
         {
-            uiState.selectedNetork--;
-            if(uiState.selectedNetork < 0) // Wrap around
+            int item = uiState.selectedNetwork;
+            item--;
+            if(item < 0) // Wrap around
             {
-                uiState.selectedNetork = networkCount - 1;
+                item = networkCount - 1;
             }
-            updateVisibleWindow(uiState.selectedNetork, uiState.firstVisibleNetwork);
+            uiState.selectedNetwork = item;
+            updateVisibleWindow(uiState.selectedNetwork, uiState.firstVisibleNetwork);
             screenDirty = true;
             break;
         }
 
         case InputEvent::ButtonClick:
-            Serial.println("Selected : ");
-    
-            pendingAction = UIAction::ConnectWiFi;
+            pendingAction = UIAction::SelectWiFiNetwork;
+            screenDirty = true;
             break;
 
         case InputEvent::ButtonLongPress:
+            
             goToScreen(Screen::WiFi);
             break;
             
@@ -307,18 +323,15 @@ void UIManager::handleAboutScreen(InputEvent event)
     return;
 }
 
-    
-
-
 void UIManager::update()
 {
     static Screen lastScreen = Screen::Splash;
     static HomeMenuItem lastItem = HomeMenuItem::Notification;
-    if(lastScreen != currentScreen)
+    if(lastScreen != uiState.currentScreen)
     {
         Serial.print("Current Screen: ");
 
-        switch(currentScreen)
+        switch(uiState.currentScreen)
         {
             case Screen::Splash:
                 Serial.println("Splash");
@@ -345,7 +358,7 @@ void UIManager::update()
                 break;
         }
 
-        lastScreen = currentScreen;
+        lastScreen = uiState.currentScreen;
     }
 
     if(lastItem != uiState.selectedHomeItem)
