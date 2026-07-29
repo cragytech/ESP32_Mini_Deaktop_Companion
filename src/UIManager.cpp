@@ -3,6 +3,9 @@
 const UIState& UIManager::getUIState() const{
     return uiState;
 }
+uint8_t UIManager::getSelectedNetworkIndex() const{
+    return uiState.selectedNetwork;
+}
 void UIManager::setSelectedSSID(const String& ssid){
     uiState.selectedSSID = ssid;
 }
@@ -34,6 +37,46 @@ void UIManager::onScanCompleted(int networkCount){
     uiState.selectedNetwork = 0;
     uiState.firstVisibleNetwork = 0;
 
+    screenDirty = true;
+}
+uint8_t UIManager::getCharacterCount() const{
+    return strlen(getCurrentCharacterSet()) + 2;
+}
+//============================================================
+//Current keyboard mode
+// ===========================================================
+const char* UIManager::getCurrentCharacterSet() const{
+    switch(uiState.keyboardMode){
+        case KeyboardMode::UpperCase:
+            return UPPER_CASE;
+        case KeyboardMode::LowerCase:
+            return LOWER_CASE;
+        case KeyboardMode::Numbers:
+            return NUMBERS;
+        case KeyboardMode::Symbols:
+            return SYMBOLS;
+    }
+    return UPPER_CASE;
+}
+//============================================================
+//Helper for next keyboard mode selection
+// ===========================================================
+void UIManager::nextKeyboardMode(){
+    switch(uiState.keyboardMode){
+        case KeyboardMode::UpperCase:
+            uiState.keyboardMode = KeyboardMode::LowerCase;
+            break;
+        case KeyboardMode::LowerCase:
+            uiState.keyboardMode = KeyboardMode::Numbers;
+            break;
+        case KeyboardMode::Numbers:
+            uiState.keyboardMode = KeyboardMode::Symbols;
+            break;
+        case KeyboardMode::Symbols:
+            uiState.keyboardMode = KeyboardMode::UpperCase;
+            break;
+    }
+    uiState.selectedCharacter = 0;
     screenDirty = true;
 }
 
@@ -120,8 +163,10 @@ void UIManager::handleEvent(InputEvent event, uint8_t networkCount)
             handleWiFiScreen(event);
             break;
         case Screen::WiFiScan:
-        Serial.println("handle event wifi scan");
             handleWiFiScanScreen(event, networkCount);
+            break;
+        case Screen::WiFiPassword:
+            handleWiFiPasswordScreen(event);
             break;
         case Screen::Notifications:
             handleNotificationScreen(event);
@@ -293,6 +338,102 @@ void UIManager::handleWiFiScanScreen(InputEvent event, uint8_t networkCount)
 }
 
 //============================================================
+//Handle Password Screen
+// ===========================================================
+void UIManager::handleWiFiPasswordScreen(InputEvent event){
+    const char* charset = getCurrentCharacterSet();
+    uint8_t maxIndex = getCharacterCount();
+
+    switch(event){
+        case InputEvent::EncoderCW:
+        {   
+            uint8_t charCount = strlen(charset);
+
+            int selch = uiState.selectedCharacter;
+            selch++;
+            if(selch > maxIndex -1){
+                selch = 0;
+            }
+            uiState.selectedCharacter = selch;
+
+            if(uiState.selectedCharacter < charCount)
+            {
+                uiState.currentCharacter = charset[uiState.selectedCharacter];
+                Serial.println(charset[uiState.selectedCharacter]);
+            }
+            else if(uiState.selectedCharacter == charCount)
+            {
+                uiState.currentCharacter = "MODE";
+                Serial.println("MODE");
+            }
+            else
+            {
+                uiState.currentCharacter = "DEL";
+                Serial.println("DEL");
+            }
+            
+            screenDirty = true;
+            break;
+        }
+        case InputEvent::EncoderCCW:
+        {
+            uint8_t charCount = strlen(charset);
+            
+            int selch = uiState.selectedCharacter;
+            selch--;
+            if(selch < 0){
+                selch = maxIndex - 1;
+            }
+            uiState.selectedCharacter = selch;
+            
+            if(uiState.selectedCharacter < charCount)
+            {
+                uiState.currentCharacter = charset[uiState.selectedCharacter];
+                Serial.println(charset[uiState.selectedCharacter]);
+            }
+            else if(uiState.selectedCharacter == charCount)
+            {
+                uiState.currentCharacter = "MODE";
+                Serial.println("MODE");
+            }
+            else
+            {
+                uiState.currentCharacter = "DEL";
+                Serial.println("DEL");
+            }
+
+            screenDirty = true;
+            break;
+        }
+        case InputEvent::ButtonClick:
+        {
+            uint8_t charCount = strlen(charset);
+            if(uiState.selectedCharacter < charCount){
+                uiState.wifiPassword += charset[uiState.selectedCharacter];
+                Serial.println(uiState.wifiPassword);
+            }
+            else if(uiState.selectedCharacter == charCount){
+                nextKeyboardMode();
+            }
+            else{
+                if(!uiState.wifiPassword.isEmpty()){
+                    uiState.wifiPassword.remove(uiState.wifiPassword.length() - 1);
+                }
+            }
+            screenDirty = true;
+            break;
+        }
+        case InputEvent::ButtonLongPress:
+            pendingAction = UIAction::ConnectWiFi;
+            screenDirty = true;
+            break;
+        default:
+            break;
+    }
+}
+
+
+//============================================================
 //Handle Notification Screen
 // ===========================================================
 void UIManager::handleNotificationScreen(InputEvent event)
@@ -355,6 +496,12 @@ void UIManager::update()
 
             case Screen::About:
                 Serial.println("About");
+                break;
+            case Screen::WiFiPassword:
+                Serial.println("WiFiPassword");
+                break;
+            case Screen::WiFiScan:
+                Serial.println("WiFiScan");
                 break;
         }
 

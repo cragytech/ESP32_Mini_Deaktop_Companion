@@ -6,6 +6,7 @@
 #include "UIState.h"
 #include "WiFiManager.h"
 #include "DisplayData.h"
+#include "KeyboardLayout.h"
 
 
 class UIManager
@@ -19,16 +20,18 @@ public:
     void goToScreen(Screen screen);
     void onScanCompleted(int networkCount);
     const UIState& getUIState() const;
+    uint8_t getSelectedNetworkIndex() const;
+    void setSelectedSSID(const String& ssid);
+    void nextKeyboardMode();
 
     UIAction getPendingAction();
     void clearPendingAction();
-
-
 private:
 
     void handleHomeScreen(InputEvent event);
     void handleWiFiScreen(InputEvent event);
     void handleWiFiScanScreen(InputEvent event, uint8_t networkCount);
+    void handleWiFiPasswordScreen(InputEvent event);
     void handleNotificationScreen(InputEvent event);
     void handleSettingsScreen(InputEvent event);
     void handleAboutScreen(InputEvent event);
@@ -37,11 +40,10 @@ private:
     void changeScreen(Screen newScreen);
     void updateVisibleWindow(uint8_t selcted, uint8_t &firstVisibleItem);
     void goToHome();
-    void setSelectedSSID(const String& ssid);
+    const char* getCurrentCharacterSet() const;
+    uint8_t getCharacterCount() const;
     bool screenDirty = true;
     UIState uiState;
-    // uiState.currentScreen = Screen::Splash;
-
     DisplayData data;
     UIAction pendingAction = UIAction::None;
 

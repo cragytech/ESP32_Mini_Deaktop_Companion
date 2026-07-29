@@ -6,7 +6,7 @@ enum class InputEvent
     EncoderCW,
     EncoderCCW,
     ButtonClick,
-    ButtonLongPress
+    ButtonLongPress,
 };
 
 enum class Screen
@@ -46,4 +46,10 @@ enum class UIAction{
     ConnectWiFi,
     DisconnectWiFi,
     SelectWiFiNetwork
+};
+enum class KeyboardMode{
+    UpperCase,
+    LowerCase,
+    Numbers,
+    Symbols
 };

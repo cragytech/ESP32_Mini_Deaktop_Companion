@@ -38,7 +38,7 @@ bool DisplayManager::begin(){
     Serial.println("initilizing oled");
     return true;
 }
-//void DisplayManager::update(Screen screen, HomeMenuItem selectedItem, uint8_t firstVisibleItem){
+
     
 void DisplayManager::drawStatusBar(){
     display.drawLine(0,10,SCREEN_WIDTH,10,SSD1306_WHITE);
@@ -70,7 +70,7 @@ void DisplayManager::drawMenuItem(int y, const char* text, bool selected){  //It
     display.setTextColor(SSD1306_WHITE);
 }
 
-// This will draw a list of menu items on the display, highlighting the selected item. It takes a Menu struct as input, which contains the title of the menu, an array of item strings, the total number of items, the index of the selected item, and the index of the first visible item. The function iterates through the visible items and calls drawMenuItem for each one, passing in the appropriate parameters to handle highlighting.
+
 void DisplayManager::drawList(const Menu& menu){
     display.setCursor(0,0);
     display.println(menu.title);
@@ -103,7 +103,10 @@ void DisplayManager::drawContent(const DisplayData& data)
         case Screen::WiFiScan:
             drawWiFiScan(data);
             break;
-        
+
+        case Screen::WiFiPassword:
+            drawWiFiPassward(data);
+            break;
         case Screen::messages:
             drawMessages();
             break;
@@ -225,6 +228,31 @@ void DisplayManager::drawWiFiScan(const DisplayData& data){
         int y = 15 + i * 10;
         drawMenuItem(y, data.ssidList[index].c_str(), index == data.uiState.selectedNetwork);
     }
+}
+
+//============================================================
+//Draw WiFi passward entering screen
+// ===========================================================
+void DisplayManager::drawWiFiPassward(const DisplayData& data){
+    display.clearDisplay();
+
+    display.setCursor(0,0);
+    display.println("WiFi Passward");
+
+    display.drawLine(0,10,SCREEN_WIDTH,10,SSD1306_WHITE);
+
+    display.setCursor(0,14);
+    display.print("SSID: ");
+    display.println(trimTextToFit(data.uiState.selectedSSID,SCREEN_WIDTH - 20));
+    // display.println(data.uiState.selectedSSID);
+    
+    display.setCursor(0,30);
+    display.print("Pass:");
+    display.println(data.uiState.wifiPassword);
+
+    display.setCursor(0,40);
+    display.print("Current: ");
+    display.println(data.uiState.currentCharacter);
 }
 
 void DisplayManager::drawMessages(){

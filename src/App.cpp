@@ -11,6 +11,8 @@ void App::begin()
 }
 void App::update()
 {
+    DisplayData displayData;
+
     inputManager.update();
     InputEvent event = inputManager.getEvent();
     
@@ -43,8 +45,9 @@ void App::update()
             break;
 
         case UIAction::SelectWiFiNetwork:
-            uiState.selectedSSID = wifiManager.getSSIDString(uiManager.getUIState().selectedNetwork);
-            Serial.println(uiState.selectedSSID);
+            uiManager.setSelectedSSID(wifiManager.getSSIDString(uiManager.getSelectedNetworkIndex()));
+
+            Serial.println(displayData.uiState.selectedSSID);
             uiManager.goToScreen(Screen::WiFiPassword);
             uiManager.clearPendingAction();
             break;
@@ -62,14 +65,11 @@ void App::update()
         wifiManager.clearScanCompleteFlag();
     }
     //-----Build DisplayData--------
-    DisplayData displayData;
-
     displayData.uiState             = uiManager.getUIState();
     displayData.wifiScanning        = wifiManager.isScanning();
     uiState.availableNetworkCount   = wifiManager.getNetworkCount();
     displayData.networkCount        = wifiManager.getNetworkCount();
     displayData.ssidList            = wifiManager.getSSIDList();
-
     if(uiManager.isDirty()){
         displayManager.update(displayData);
         uiManager.clearDirty();

@@ -34,6 +34,7 @@ private:
     void drawHome(HomeMenuItem selectedItem, uint8_t firstVisibleItem);
     void drawWiFi(WiFiMenuItem selectedItem, uint8_t firstVisibleItem);
     void drawWiFiScan(const DisplayData& data);
+    void drawWiFiPassward(const DisplayData& data);
     void drawNotifications();
     void drawMessages();
     void drawSettings();

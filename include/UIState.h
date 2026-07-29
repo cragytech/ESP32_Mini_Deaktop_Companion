@@ -19,4 +19,12 @@ struct UIState
     uint8_t selectedNetwork = 0;
     uint8_t firstVisibleNetwork = 0;
     String selectedSSID = "";
+
+    // WiFi Password
+    String wifiPassword = "";
+    uint8_t passwordCursor = 0;
+    KeyboardMode keyboardMode;
+    uint8_t selectedCharacter = 0;
+    String currentCharacter = "";
+
 };
