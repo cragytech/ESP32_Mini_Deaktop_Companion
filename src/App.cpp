@@ -22,15 +22,20 @@ void App::update()
     wifiManager.update();
     uiManager.update();
 
-    switch(wifiManager.getState()){
-        case WiFiState::Connected:
-            uiManager.goToScreen(Screen::WiFiConnected);
-            break;
-        case WiFiState::Failed:
-            uiManager.goToScreen(Screen::WiFiFailed);
-            break;
-        default:
-            break;
+    WiFiState currentWiFiState = wifiManager.getState();
+    if(currentWiFiState != lastWiFiState){
+        switch(currentWiFiState){
+            case WiFiState::Connected:
+                uiManager.goToScreen(Screen::WiFiConnected);
+                break;
+            case WiFiState::Failed:
+                uiManager.goToScreen(Screen::WiFiFailed);
+                break;
+            default:
+                break;
+        }
+
+        lastWiFiState = currentWiFiState;
     }
 
     if(event != InputEvent::None)

@@ -112,7 +112,10 @@ void UIManager::onEnterScreen(Screen screen)
 }
 void UIManager::goToScreen(Screen screen)
 {
+    if(uiState.currentScreen == screen) return;
+
     uiState.currentScreen = screen;
+    screenEnterTime = millis();
     screenDirty = true;
     
     onEnterScreen(screen);
@@ -123,6 +126,7 @@ void UIManager::changeScreen(Screen newScreen)
     if(uiState.currentScreen == newScreen) return;
 
     uiState.currentScreen = newScreen;
+    screenEnterTime = millis();
     screenDirty = true;
     onEnterScreen(newScreen);
 }
@@ -132,19 +136,19 @@ void UIManager::openSelectedMenu()
     switch (uiState.selectedHomeItem)
     {
         case HomeMenuItem::Notification:
-            uiState.currentScreen = Screen::Notifications;
+            goToScreen(Screen::Notifications);
             break;
 
         case HomeMenuItem::WiFi:
-            uiState.currentScreen = Screen::WiFi;
+            goToScreen(Screen::WiFi);
             break;
 
         case HomeMenuItem::Settings:
-            uiState.currentScreen = Screen::Settings;
+            goToScreen(Screen::Settings);
             break;
 
         case HomeMenuItem::About:
-            uiState.currentScreen = Screen::About;
+            goToScreen(Screen::About);
             break;
 
         default:
@@ -262,10 +266,9 @@ void UIManager::handleWiFiScreen(InputEvent event)
         case InputEvent::ButtonClick: {
             switch(uiState.selectedWiFiItem){
                 case WiFiMenuItem::ScanNetworks: {
-                    uiState.currentScreen = Screen::WiFiScan;
+                    goToScreen(Screen::WiFiScan);
                     Serial.println("Scan Networks Selected");
                     pendingAction = UIAction::StartWiFiScan;
-                    screenDirty = true;
                     break;
                 }
                 case WiFiMenuItem::Disconnect: {
@@ -437,7 +440,6 @@ void UIManager::handleWiFiPasswordScreen(InputEvent event){
         }
         case InputEvent::ButtonLongPress:
             pendingAction = UIAction::ConnectWiFi;
-            screenEnterTime = millis();
             screenDirty = true;
             break;
         default:
@@ -592,11 +594,13 @@ void UIManager::update()
 void UIManager::begin()
 {
     uiState.currentScreen = Screen::Home;
+    screenEnterTime = millis();
     uiState.selectedHomeItem = HomeMenuItem::Notification;
     uiState.firstVisibleHomeItem = 0;
 
     uiState.selectedWiFiItem = WiFiMenuItem::ScanNetworks;
     uiState.firastVisibleWiFiItem = 0;
+    uiState.keyboardMode = KeyboardMode::UpperCase;
 }
 
 void UIManager::updateVisibleWindow(uint8_t selected, uint8_t &firstVisibleItem){

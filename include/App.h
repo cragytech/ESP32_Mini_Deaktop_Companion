@@ -17,5 +17,6 @@ private:
     UIManager uiManager;
     DisplayManager displayManager;
     WiFiManager wifiManager;
+    WiFiState lastWiFiState = WiFiState::Idle;
     UIState uiState;
 };
