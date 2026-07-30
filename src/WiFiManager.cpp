@@ -77,9 +77,10 @@ void WiFiManager::scanNetworks(){
 
 bool WiFiManager::connect(const String& ssid, const String& passward){
     if(ssid.isEmpty()) return false;
-    
     currentSSID = ssid;
     currentPassward = passward;
+    Serial.println(currentSSID);
+    Serial.println(currentPassward);
     WiFi.disconnect(true);
     delay(100);
     WiFi.begin(currentSSID.c_str(), currentPassward.c_str());
@@ -121,6 +122,14 @@ void WiFiManager::update(){
         }
         case WiFiState::Connecting:
         {
+            if(WiFi.status() == WL_CONNECTED){
+                //store targetSSID
+                state = WiFiState::Connected;
+            }
+            else if(millis() - connectStartTime > CONNECT_TIMEOUT){
+                WiFi.disconnect();
+                state = WiFiState::Failed;
+            }
             break;
         }
         default:

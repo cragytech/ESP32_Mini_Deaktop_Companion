@@ -4,17 +4,6 @@
 #include <WiFi.h>
 #include "Events.h"
 
-
-
-enum class WiFiState{
-    Idle,
-    Scanning,
-    Connecting,
-    Connected,
-    Failed,
-    ScanComplete
-};
-
 class WiFiManager{
     public:
         WiFiManager();
@@ -49,7 +38,7 @@ class WiFiManager{
         String currentPassward;
         WiFiState state = WiFiState::Idle;
         unsigned long connectStartTime = 0;
-        static constexpr uint32_t CONNECT_TIMEOUT = 10000; // 10 seconds timeout for connection 
+        static constexpr uint32_t CONNECT_TIMEOUT = 15000; // 10 seconds timeout for connection 
         
 };
     

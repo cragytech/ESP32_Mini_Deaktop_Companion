@@ -42,6 +42,13 @@ void UIManager::onScanCompleted(int networkCount){
 uint8_t UIManager::getCharacterCount() const{
     return strlen(getCurrentCharacterSet()) + 2;
 }
+const String& UIManager::getSelectedSSID() const{
+    return uiState.selectedSSID;
+}
+const String& UIManager::getPassword() const{
+    return uiState.wifiPassword;
+}
+
 //============================================================
 //Current keyboard mode
 // ===========================================================
@@ -168,6 +175,11 @@ void UIManager::handleEvent(InputEvent event, uint8_t networkCount)
         case Screen::WiFiPassword:
             handleWiFiPasswordScreen(event);
             break;
+        case Screen::WiFiConnected:
+            break;
+        case Screen::WiFiFailed:
+            
+            break;
         case Screen::Notifications:
             handleNotificationScreen(event);
             break;
@@ -215,7 +227,6 @@ void UIManager::handleHomeScreen(InputEvent event)
             break;
     }
 }
-
 //============================================================
 //Handle WiFi Menu Screen
 // ===========================================================
@@ -343,7 +354,7 @@ void UIManager::handleWiFiScanScreen(InputEvent event, uint8_t networkCount)
 void UIManager::handleWiFiPasswordScreen(InputEvent event){
     const char* charset = getCurrentCharacterSet();
     uint8_t maxIndex = getCharacterCount();
-
+    
     switch(event){
         case InputEvent::EncoderCW:
         {   
@@ -408,6 +419,7 @@ void UIManager::handleWiFiPasswordScreen(InputEvent event){
         case InputEvent::ButtonClick:
         {
             uint8_t charCount = strlen(charset);
+
             if(uiState.selectedCharacter < charCount){
                 uiState.wifiPassword += charset[uiState.selectedCharacter];
                 Serial.println(uiState.wifiPassword);
@@ -425,14 +437,31 @@ void UIManager::handleWiFiPasswordScreen(InputEvent event){
         }
         case InputEvent::ButtonLongPress:
             pendingAction = UIAction::ConnectWiFi;
+            screenEnterTime = millis();
             screenDirty = true;
             break;
         default:
+
+            uint8_t charCount = strlen(charset);
+            if(uiState.selectedCharacter < charCount)
+            {
+                uiState.currentCharacter = charset[uiState.selectedCharacter];
+                Serial.println(charset[uiState.selectedCharacter]);
+            }
+            else if(uiState.selectedCharacter == charCount)
+            {
+                uiState.currentCharacter = "MODE";
+                Serial.println("MODE");
+            }
+            else
+            {
+                uiState.currentCharacter = "DEL";
+                Serial.println("DEL");
+            }
+            screenDirty = true;
             break;
     }
 }
-
-
 //============================================================
 //Handle Notification Screen
 // ===========================================================
@@ -451,7 +480,6 @@ void UIManager::handleSettingsScreen(InputEvent event)
     {
         goToHome();
     }
-    Serial.println("i am in setting screen");
     return;
 }
 
@@ -468,6 +496,18 @@ void UIManager::update()
 {
     static Screen lastScreen = Screen::Splash;
     static HomeMenuItem lastItem = HomeMenuItem::Notification;
+
+    if(uiState.currentScreen == Screen::WiFiConnected){
+        if(millis() - screenEnterTime > 5000){
+            goToScreen(Screen::WiFi);
+        }
+    }
+    else if(uiState.currentScreen == Screen::WiFiFailed){
+        if(millis() - screenEnterTime > 5000){
+            goToScreen(Screen::WiFiPassword);
+        }
+    }
+
     if(lastScreen != uiState.currentScreen)
     {
         Serial.print("Current Screen: ");
@@ -502,6 +542,12 @@ void UIManager::update()
                 break;
             case Screen::WiFiScan:
                 Serial.println("WiFiScan");
+                break;
+            case Screen::WiFiFailed:
+                Serial.println("WiFiFailed");
+                break;
+            case Screen::WiFiConnected:
+                Serial.println("WiFiConnected");
                 break;
         }
 

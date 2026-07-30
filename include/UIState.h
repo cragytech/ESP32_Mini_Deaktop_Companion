@@ -25,6 +25,6 @@ struct UIState
     uint8_t passwordCursor = 0;
     KeyboardMode keyboardMode;
     uint8_t selectedCharacter = 0;
-    String currentCharacter = "";
+    String currentCharacter = "A";
 
 };

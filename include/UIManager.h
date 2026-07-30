@@ -23,6 +23,8 @@ public:
     uint8_t getSelectedNetworkIndex() const;
     void setSelectedSSID(const String& ssid);
     void nextKeyboardMode();
+    const String& getSelectedSSID() const;
+    const String& getPassword() const;
 
     UIAction getPendingAction();
     void clearPendingAction();
@@ -46,5 +48,7 @@ private:
     UIState uiState;
     DisplayData data;
     UIAction pendingAction = UIAction::None;
+
+    unsigned long screenEnterTime;
 
 };

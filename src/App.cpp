@@ -22,6 +22,17 @@ void App::update()
     wifiManager.update();
     uiManager.update();
 
+    switch(wifiManager.getState()){
+        case WiFiState::Connected:
+            uiManager.goToScreen(Screen::WiFiConnected);
+            break;
+        case WiFiState::Failed:
+            uiManager.goToScreen(Screen::WiFiFailed);
+            break;
+        default:
+            break;
+    }
+
     if(event != InputEvent::None)
     {
         uiManager.handleEvent(event, wifiManager.getNetworkCount());
@@ -35,8 +46,9 @@ void App::update()
             break;
 
         case UIAction::ConnectWiFi:
+            wifiManager.connect(uiManager.getSelectedSSID(), uiManager.getPassword());
             uiManager.clearPendingAction();
-            Serial.println("trying to connect to wifi");
+            uiManager.goToScreen(Screen::WiFiConnecting);
             break;
 
         case UIAction::DisconnectWiFi:
@@ -70,6 +82,8 @@ void App::update()
     uiState.availableNetworkCount   = wifiManager.getNetworkCount();
     displayData.networkCount        = wifiManager.getNetworkCount();
     displayData.ssidList            = wifiManager.getSSIDList();
+    displayData.ipAddress           = WiFi.localIP().toString();
+    
     if(uiManager.isDirty()){
         displayManager.update(displayData);
         uiManager.clearDirty();

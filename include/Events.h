@@ -18,6 +18,8 @@ enum class Screen
     WiFiScan,
     WiFiPassword,
     WiFiConnecting,
+    WiFiConnected,
+    WiFiFailed,
     messages,
     Settings,
     About
@@ -39,6 +41,14 @@ enum class WiFiMenuItem{
     Disconnect,
     Back,
     Count
+};
+enum class WiFiState{
+    Idle,
+    Scanning,
+    Connecting,
+    Connected,
+    Failed,
+    ScanComplete
 };
 enum class UIAction{
     None,

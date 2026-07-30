@@ -35,12 +35,17 @@ private:
     void drawWiFi(WiFiMenuItem selectedItem, uint8_t firstVisibleItem);
     void drawWiFiScan(const DisplayData& data);
     void drawWiFiPassward(const DisplayData& data);
+    void drawWiFiConnecting(const DisplayData& data);
     void drawNotifications();
     void drawMessages();
     void drawSettings();
     void drawAbout();
     void drawList(const Menu& menu);
+    void drawWiFiConnected(const DisplayData& data);
+    void drawWiFiFailed();
     String trimTextToFit(String text, int maxWidth);
-
+    String trimTextFromLeft(const String& password, uint8_t maxChars);
+    String getCurrentKeyboardMode(KeyboardMode KeyboardMode);
+    
     const WiFiManager *wifiManager = nullptr; // Pointer to WiFiManager instance
 };

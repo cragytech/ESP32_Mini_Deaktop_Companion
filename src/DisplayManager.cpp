@@ -14,13 +14,31 @@ String DisplayManager::trimTextToFit(String text, int maxWidth){
     if(w <= maxWidth){
         return text;
     }
-
     while(text.length() > 0 && w > maxWidth){
         text.remove(text.length() - 1);
         display.getTextBounds(text + "...", 0, 0, &x1, &y1, &w, &h);
     }
     return text + "...";
+}
 
+String DisplayManager::trimTextFromLeft(const String& password, uint8_t maxChars){
+    if(password.length()<= maxChars)
+        return password;
+    return password.substring(password.length() - maxChars);
+}
+
+String DisplayManager::getCurrentKeyboardMode(KeyboardMode KeyboardMode){
+    if(KeyboardMode == KeyboardMode::UpperCase){
+        return "ABC";
+    }
+    else if(KeyboardMode == KeyboardMode::LowerCase){
+        return "abc";
+    }
+    else if(KeyboardMode == KeyboardMode::Numbers){
+        return "123";
+    }
+    else 
+        return "!@#";
 }
 void DisplayManager::setWiFiManager(const WiFiManager *manager){
     wifiManager = manager;
@@ -35,7 +53,6 @@ bool DisplayManager::begin(){
     display.setTextSize(1);
     display.setTextColor(SSD1306_WHITE);
     display.display();
-    Serial.println("initilizing oled");
     return true;
 }
 
@@ -43,7 +60,9 @@ bool DisplayManager::begin(){
 void DisplayManager::drawStatusBar(){
     display.drawLine(0,10,SCREEN_WIDTH,10,SSD1306_WHITE);
 }
-
+//============================================================
+//Draw footer
+// ===========================================================
 void DisplayManager::drawFooter(Screen screen){
     display.drawLine(0,54,SCREEN_WIDTH,54,SSD1306_WHITE);
     display.setCursor(0,56);
@@ -51,12 +70,13 @@ void DisplayManager::drawFooter(Screen screen){
         display.print("Rotate Select");
     }
     else{
-        display.print("Hold Btn : Home");
+        display.print("Hold Btn: Home");
     }
 }
-
-
-void DisplayManager::drawMenuItem(int y, const char* text, bool selected){  //It is responsible for making selected item to be highlited
+//============================================================
+//Highlight the selected item  
+// ===========================================================
+void DisplayManager::drawMenuItem(int y, const char* text, bool selected){
     if(selected){
         display.fillRect(0, y-1, SCREEN_WIDTH, 10, SSD1306_WHITE);
         display.setTextColor(SSD1306_BLACK);
@@ -69,15 +89,15 @@ void DisplayManager::drawMenuItem(int y, const char* text, bool selected){  //It
     display.print(trimedText);
     display.setTextColor(SSD1306_WHITE);
 }
-
-
+//============================================================
+//Draw item list
+// ===========================================================
 void DisplayManager::drawList(const Menu& menu){
     display.setCursor(0,0);
     display.println(menu.title);
     display.drawLine(0, 10, SCREEN_WIDTH, 10, SSD1306_WHITE);
     
     int y = 14;
-    
     for(uint8_t i = 0; i < MAX_VISIBLE_ITEMS; i++){
         uint8_t index = menu.firstVisibleItem + i;
         
@@ -87,7 +107,9 @@ void DisplayManager::drawList(const Menu& menu){
         y+= 10;
     }
 }
-//void DisplayManager::drawContent(Screen screen, HomeMenuItem selectedItem, uint8_t firstVisibleItem)
+//============================================================
+//Handle which screen to draw
+// ===========================================================
 void DisplayManager::drawContent(const DisplayData& data)
 {
     switch(data.uiState.currentScreen)
@@ -106,6 +128,12 @@ void DisplayManager::drawContent(const DisplayData& data)
 
         case Screen::WiFiPassword:
             drawWiFiPassward(data);
+            break;
+        case Screen::WiFiConnected:
+            drawWiFiConnected(data);
+            break;
+        case Screen::WiFiFailed:
+            drawWiFiFailed();
             break;
         case Screen::messages:
             drawMessages();
@@ -127,7 +155,9 @@ void DisplayManager::drawContent(const DisplayData& data)
             break;
     }
 }
-
+//============================================================
+//Draw home
+// ===========================================================
 void DisplayManager::drawHome(HomeMenuItem selectedItem, uint8_t firstVisibleItem){
     static const char* homeItems[]= 
     {
@@ -151,7 +181,9 @@ void DisplayManager::drawHome(HomeMenuItem selectedItem, uint8_t firstVisibleIte
     
     drawList(homeMenu);
 }
-
+//============================================================
+//Draw wifi home screen
+// ===========================================================
 void DisplayManager::drawWiFi(WiFiMenuItem selectedItem, uint8_t firstVisbleItem){
     static const char* wifiItems[] = 
     {
@@ -195,7 +227,6 @@ void DisplayManager::drawWiFi(WiFiMenuItem selectedItem, uint8_t firstVisbleItem
         return;
     }
 }
-
 //============================================================
 //Draw the list of scaned network
 // ===========================================================
@@ -205,7 +236,6 @@ void DisplayManager::drawWiFiScan(const DisplayData& data){
     display.setCursor(0,0);
     display.println("Available Networks");
     display.drawLine(0, 10, SCREEN_WIDTH, 10, SSD1306_WHITE);
-    Serial.println("draw wifi scan");
 
     if(data.wifiScanning){
         display.setCursor(0,20);
@@ -229,7 +259,6 @@ void DisplayManager::drawWiFiScan(const DisplayData& data){
         drawMenuItem(y, data.ssidList[index].c_str(), index == data.uiState.selectedNetwork);
     }
 }
-
 //============================================================
 //Draw WiFi passward entering screen
 // ===========================================================
@@ -243,18 +272,54 @@ void DisplayManager::drawWiFiPassward(const DisplayData& data){
 
     display.setCursor(0,14);
     display.print("SSID: ");
-    display.println(trimTextToFit(data.uiState.selectedSSID,SCREEN_WIDTH - 20));
-    // display.println(data.uiState.selectedSSID);
+    display.println(trimTextToFit(data.uiState.selectedSSID,SCREEN_WIDTH - 40));
     
     display.setCursor(0,30);
     display.print("Pass:");
-    display.println(data.uiState.wifiPassword);
+    display.println(trimTextFromLeft(data.uiState.wifiPassword, 16));
 
     display.setCursor(0,40);
-    display.print("Current: ");
-    display.println(data.uiState.currentCharacter);
-}
+    display.print("Current:");
+    display.print(data.uiState.currentCharacter);
 
+    display.setCursor(70,40);
+    display.print("|Mode:");
+    display.print(getCurrentKeyboardMode(data.uiState.keyboardMode));
+}
+//============================================================
+//Draw WiFi connecting screen
+// ===========================================================
+void DisplayManager::drawWiFiConnecting(const DisplayData& data){
+    display.setCursor(0,0);
+    display.println("connecting...");
+    display.setCursor(0, 20);
+    display.println(data.uiState.selectedSSID);
+    display.setCursor(0,40);
+    display.println("Please Wait");
+}
+//============================================================
+//Draw WiFi connected
+// ===========================================================
+void DisplayManager::drawWiFiConnected(const DisplayData& data){
+    display.setCursor(0,0);
+    display.println("WiFi Connected");
+    display.setCursor(0, 20);
+   
+    display.setCursor(0,14);
+    display.print("SSID: ");
+    display.println(trimTextToFit(data.uiState.selectedSSID,SCREEN_WIDTH - 40));
+    display.println("IP: ");
+    display.println(data.ipAddress);
+}   
+//============================================================
+//Draw WiFi failed   
+// ===========================================================
+void DisplayManager::drawWiFiFailed(){
+    display.setCursor(0,0);
+    display.println("Connection Failed");
+    display.setCursor(0,20);
+    display.println("check Password");
+}
 void DisplayManager::drawMessages(){
     display.setCursor(0,0);
     display.println("Messages??");
