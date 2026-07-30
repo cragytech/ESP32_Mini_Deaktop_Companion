@@ -42,6 +42,8 @@ private:
     void changeScreen(Screen newScreen);
     void updateVisibleWindow(uint8_t selcted, uint8_t &firstVisibleItem);
     void goToHome();
+    void resetPasswordEditor();
+    void clearSelectedSSID();
     const char* getCurrentCharacterSet() const;
     uint8_t getCharacterCount() const;
     bool screenDirty = true;

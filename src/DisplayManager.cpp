@@ -135,6 +135,9 @@ void DisplayManager::drawContent(const DisplayData& data)
         case Screen::WiFiFailed:
             drawWiFiFailed();
             break;
+        case Screen::WiFiConnecting:
+            drawWiFiConnecting(data);
+            break;
         case Screen::messages:
             drawMessages();
             break;
@@ -276,6 +279,7 @@ void DisplayManager::drawWiFiPassward(const DisplayData& data){
     
     display.setCursor(0,30);
     display.print("Pass:");
+    Serial.println(data.uiState.wifiPassword);
     display.println(trimTextFromLeft(data.uiState.wifiPassword, 16));
 
     display.setCursor(0,40);

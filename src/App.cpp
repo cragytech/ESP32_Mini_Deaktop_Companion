@@ -26,6 +26,7 @@ void App::update()
     if(currentWiFiState != lastWiFiState){
         switch(currentWiFiState){
             case WiFiState::Connected:
+            Serial.println("go to wifi connected Screen form app.cpp");
                 uiManager.goToScreen(Screen::WiFiConnected);
                 break;
             case WiFiState::Failed:

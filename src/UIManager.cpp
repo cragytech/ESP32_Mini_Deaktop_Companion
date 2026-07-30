@@ -40,7 +40,7 @@ void UIManager::onScanCompleted(int networkCount){
     screenDirty = true;
 }
 uint8_t UIManager::getCharacterCount() const{
-    return strlen(getCurrentCharacterSet()) + 2;
+    return strlen(getCurrentCharacterSet()) + 3;
 }
 const String& UIManager::getSelectedSSID() const{
     return uiState.selectedSSID;
@@ -48,7 +48,21 @@ const String& UIManager::getSelectedSSID() const{
 const String& UIManager::getPassword() const{
     return uiState.wifiPassword;
 }
+void UIManager::resetPasswordEditor()
+{
+    uiState.wifiPassword = "";
+    Serial.println(uiState.wifiPassword);
 
+    uiState.selectedCharacter = 0;
+
+    uiState.keyboardMode = KeyboardMode::UpperCase;
+
+    screenDirty = true;
+}
+void UIManager::clearSelectedSSID()
+{
+    uiState.selectedSSID = "";
+}
 //============================================================
 //Current keyboard mode
 // ===========================================================
@@ -112,10 +126,7 @@ void UIManager::onEnterScreen(Screen screen)
 }
 void UIManager::goToScreen(Screen screen)
 {
-    if(uiState.currentScreen == screen) return;
-
     uiState.currentScreen = screen;
-    screenEnterTime = millis();
     screenDirty = true;
     
     onEnterScreen(screen);
@@ -126,7 +137,6 @@ void UIManager::changeScreen(Screen newScreen)
     if(uiState.currentScreen == newScreen) return;
 
     uiState.currentScreen = newScreen;
-    screenEnterTime = millis();
     screenDirty = true;
     onEnterScreen(newScreen);
 }
@@ -136,19 +146,19 @@ void UIManager::openSelectedMenu()
     switch (uiState.selectedHomeItem)
     {
         case HomeMenuItem::Notification:
-            goToScreen(Screen::Notifications);
+            uiState.currentScreen = Screen::Notifications;
             break;
 
         case HomeMenuItem::WiFi:
-            goToScreen(Screen::WiFi);
+            uiState.currentScreen = Screen::WiFi;
             break;
 
         case HomeMenuItem::Settings:
-            goToScreen(Screen::Settings);
+            uiState.currentScreen = Screen::Settings;
             break;
 
         case HomeMenuItem::About:
-            goToScreen(Screen::About);
+            uiState.currentScreen = Screen::About;
             break;
 
         default:
@@ -266,9 +276,10 @@ void UIManager::handleWiFiScreen(InputEvent event)
         case InputEvent::ButtonClick: {
             switch(uiState.selectedWiFiItem){
                 case WiFiMenuItem::ScanNetworks: {
-                    goToScreen(Screen::WiFiScan);
+                    uiState.currentScreen = Screen::WiFiScan;
                     Serial.println("Scan Networks Selected");
                     pendingAction = UIAction::StartWiFiScan;
+                    screenDirty = true;
                     break;
                 }
                 case WiFiMenuItem::Disconnect: {
@@ -357,7 +368,7 @@ void UIManager::handleWiFiScanScreen(InputEvent event, uint8_t networkCount)
 void UIManager::handleWiFiPasswordScreen(InputEvent event){
     const char* charset = getCurrentCharacterSet();
     uint8_t maxIndex = getCharacterCount();
-    
+
     switch(event){
         case InputEvent::EncoderCW:
         {   
@@ -380,10 +391,14 @@ void UIManager::handleWiFiPasswordScreen(InputEvent event){
                 uiState.currentCharacter = "MODE";
                 Serial.println("MODE");
             }
-            else
+            else if(uiState.selectedCharacter == charCount+1)
             {
                 uiState.currentCharacter = "DEL";
                 Serial.println("DEL");
+            }
+            else{
+                uiState.currentCharacter = "BCK";
+                Serial.println("BCK");
             }
             
             screenDirty = true;
@@ -410,10 +425,14 @@ void UIManager::handleWiFiPasswordScreen(InputEvent event){
                 uiState.currentCharacter = "MODE";
                 Serial.println("MODE");
             }
-            else
+            else if(uiState.selectedCharacter == charCount+1)
             {
                 uiState.currentCharacter = "DEL";
                 Serial.println("DEL");
+            }
+            else{
+                uiState.currentCharacter = "BCK";
+                Serial.println("BCK");
             }
 
             screenDirty = true;
@@ -430,16 +449,20 @@ void UIManager::handleWiFiPasswordScreen(InputEvent event){
             else if(uiState.selectedCharacter == charCount){
                 nextKeyboardMode();
             }
-            else{
+            else if(uiState.selectedCharacter == charCount + 1){
                 if(!uiState.wifiPassword.isEmpty()){
                     uiState.wifiPassword.remove(uiState.wifiPassword.length() - 1);
                 }
+            }
+            else{
+                goToScreen(Screen::WiFi);
             }
             screenDirty = true;
             break;
         }
         case InputEvent::ButtonLongPress:
             pendingAction = UIAction::ConnectWiFi;
+            screenEnterTime = millis();
             screenDirty = true;
             break;
         default:
@@ -498,14 +521,17 @@ void UIManager::update()
 {
     static Screen lastScreen = Screen::Splash;
     static HomeMenuItem lastItem = HomeMenuItem::Notification;
-
+    
     if(uiState.currentScreen == Screen::WiFiConnected){
-        if(millis() - screenEnterTime > 5000){
+        if(millis() - screenEnterTime > 2000){
+            Serial.println("passward was reseted in update");
+            resetPasswordEditor();
             goToScreen(Screen::WiFi);
         }
     }
     else if(uiState.currentScreen == Screen::WiFiFailed){
-        if(millis() - screenEnterTime > 5000){
+        if(millis() - screenEnterTime > 2000){
+            uiState.keyboardMode = KeyboardMode::UpperCase;
             goToScreen(Screen::WiFiPassword);
         }
     }
@@ -594,13 +620,11 @@ void UIManager::update()
 void UIManager::begin()
 {
     uiState.currentScreen = Screen::Home;
-    screenEnterTime = millis();
     uiState.selectedHomeItem = HomeMenuItem::Notification;
     uiState.firstVisibleHomeItem = 0;
 
     uiState.selectedWiFiItem = WiFiMenuItem::ScanNetworks;
     uiState.firastVisibleWiFiItem = 0;
-    uiState.keyboardMode = KeyboardMode::UpperCase;
 }
 
 void UIManager::updateVisibleWindow(uint8_t selected, uint8_t &firstVisibleItem){
@@ -613,20 +637,3 @@ void UIManager::updateVisibleWindow(uint8_t selected, uint8_t &firstVisibleItem)
         firstVisibleItem = selected;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
