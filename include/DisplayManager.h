@@ -6,6 +6,8 @@
 #include "UIManager.h"
 #include "DisplayData.h"
 #include "UIState.h"
+#include "MessageManager.h"
+#include "TextUtils.h"
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -37,7 +39,8 @@ private:
     void drawWiFiPassward(const DisplayData& data);
     void drawWiFiConnecting(const DisplayData& data);
     void drawNotifications();
-    void drawMessages();
+    void drawMessages(const DisplayData& data);
+    void drawMessageView(const DisplayData& data);
     void drawSettings();
     void drawAbout();
     void drawList(const Menu& menu);

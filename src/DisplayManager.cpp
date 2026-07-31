@@ -138,10 +138,12 @@ void DisplayManager::drawContent(const DisplayData& data)
         case Screen::WiFiConnecting:
             drawWiFiConnecting(data);
             break;
-        case Screen::messages:
-            drawMessages();
+        case Screen::Messages:
+            drawMessages(data);
             break;
-        
+        case Screen::MessageView:
+            drawMessageView(data);
+            break;
         case Screen::Notifications:
             drawNotifications();
             break;
@@ -324,11 +326,80 @@ void DisplayManager::drawWiFiFailed(){
     display.setCursor(0,20);
     display.println("check Password");
 }
-void DisplayManager::drawMessages(){
+void DisplayManager::drawMessages(const DisplayData& data){
     display.setCursor(0,0);
-    display.println("Messages??");
-    display.println();
-    display.println("No Messages");
+    display.println("Messages");
+    
+    MessageManager* manager = data.messageManager;
+
+    for(uint8_t i = 0; i < MAX_VISIBLE_ITEMS; i++)
+    {
+        uint8_t index = data.uiState.firstVisibleMessage + i;
+
+        if(index >= manager->getMessageCount())
+            break;
+
+        const Message& msg = manager->getMessage(index);
+
+        display.setCursor(0,15 + i * 10);
+
+        if(index == data.uiState.selectedMessage)
+            display.print("> ");
+        else
+            display.print("  ");
+
+        display.println(msg.title);
+    }
+}
+//============================================================
+//Draw perticular message
+// ===========================================================
+void DisplayManager::drawMessageView(const DisplayData& data){
+    MessageManager* manager = data.messageManager;
+
+    if(manager == nullptr)
+        return;
+
+    const Message& msg =  manager->getMessage(data.uiState.openedMessage);
+    Serial.println(data.uiState.openedMessage);
+    // String wrapped[MAX_WRAP_LINES];
+    
+    // uint8_t totalLines = TextUtils::wrapText(msg.body, wrapped, 20);
+
+    display.setTextSize(1);
+    display.setCursor(0,0);
+    display.println(msg.title);
+    drawStatusBar();
+
+    display.setCursor(0,15);
+    display.println(msg.sender);
+
+    display.setCursor(70,15);
+    display.println(msg.timestamp);
+
+Serial.println("Inside DisplayManager");
+
+for(int i=0;i<data.messageViewerState.lineCount;i++)
+{
+    Serial.print(i);
+    Serial.print(" : ");
+    Serial.println(data.messageViewerState.wrappedLines[i]);
+}
+
+    for(uint8_t i = 0; i < 4; i++){
+        uint8_t line = data.messageViewerState.scrollOffset + i;
+        
+        if(line >= data.messageViewerState.lineCount)
+            break;
+        display.setCursor(0, 28 + i*10);
+        display.println(data.messageViewerState.wrappedLines[line]);
+    }
+//     display.setCursor(0,30);
+//     display.println(msg.body);
+
+    Serial.println(msg.body);
+    Serial.println(data.messageViewerState.wrappedLines[0]);
+    Serial.println("message finished");
 }
 
 void DisplayManager::drawNotifications(){

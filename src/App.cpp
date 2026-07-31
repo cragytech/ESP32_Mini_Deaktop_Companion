@@ -7,11 +7,15 @@ void App::begin()
     uiManager.begin();
     displayManager.begin();
     wifiManager.begin();
+    messageManager.begin();
     displayManager.setWiFiManager(&wifiManager);
+    Message msg;
+
 }
 void App::update()
 {
-    DisplayData displayData;
+    // DisplayData displayData;
+    // UIData data;
 
     inputManager.update();
     InputEvent event = inputManager.getEvent();
@@ -41,7 +45,7 @@ void App::update()
 
     if(event != InputEvent::None)
     {
-        uiManager.handleEvent(event, wifiManager.getNetworkCount());
+        uiManager.handleEvent(event,data);
     }
 
     switch(uiManager.getPendingAction())
@@ -64,11 +68,33 @@ void App::update()
 
         case UIAction::SelectWiFiNetwork:
             uiManager.setSelectedSSID(wifiManager.getSSIDString(uiManager.getSelectedNetworkIndex()));
-
-            Serial.println(displayData.uiState.selectedSSID);
             uiManager.goToScreen(Screen::WiFiPassword);
             uiManager.clearPendingAction();
             break;
+            
+        case UIAction::OpenMessage:
+        {   
+            const Message& msg = messageManager.getMessage(uiState.selectedMessage);
+            displayData.messageViewerState.lineCount = TextUtils::wrapText(msg.body, displayData.messageViewerState.wrappedLines, 20);
+            Serial.print("from app.cpp");
+            Serial.println(displayData.messageViewerState.wrappedLines[0]);
+        
+            messageManager.markAsRead(uiManager.getUIState().openedMessage);
+            displayData.messageViewerState.scrollOffset = 0;
+
+            Serial.println("Before DisplayManager");
+Serial.println(displayData.messageViewerState.lineCount);
+
+for(int i=0;i<displayData.messageViewerState.lineCount;i++)
+{
+    Serial.print(i);
+    Serial.print(" : ");
+    Serial.println(displayData.messageViewerState.wrappedLines[i]);
+}
+            uiManager.goToScreen(Screen::MessageView);
+            uiManager.clearPendingAction();
+            break;
+        }
 
         default:
             break;
@@ -84,12 +110,17 @@ void App::update()
     }
     //-----Build DisplayData--------
     displayData.uiState             = uiManager.getUIState();
+    // displayData.messageViewerState  = uiManager.getMessageViewerState();
     displayData.wifiScanning        = wifiManager.isScanning();
     uiState.availableNetworkCount   = wifiManager.getNetworkCount();
     displayData.networkCount        = wifiManager.getNetworkCount();
     displayData.ssidList            = wifiManager.getSSIDList();
     displayData.ipAddress           = WiFi.localIP().toString();
-    
+    displayData.messageManager      = &messageManager;
+    //-----Build UIContext----------
+    data.messageCount = messageManager.getMessageCount();
+    data.networkCount = wifiManager.getNetworkCount();
+
     if(uiManager.isDirty()){
         displayManager.update(displayData);
         uiManager.clearDirty();
