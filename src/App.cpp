@@ -7,26 +7,29 @@ void App::begin()
     uiManager.begin();
     displayManager.begin();
     wifiManager.begin();
+    messageManager.begin();
     displayManager.setWiFiManager(&wifiManager);
+    Message msg;
+
 }
 void App::update()
 {
     DisplayData displayData;
-
+    UIData data;
+    
+    displayData.messageViewerState  = &uiManager.getMessageViewerState();   // without passign it as a pointer i have to face lot of issue
     inputManager.update();
     InputEvent event = inputManager.getEvent();
     
     if(wifiManager.isScanComplete()){
         uiState.availableNetworkCount = wifiManager.getNetworkCount();
     }
-    wifiManager.update();
-    uiManager.update();
 
     WiFiState currentWiFiState = wifiManager.getState();
+
     if(currentWiFiState != lastWiFiState){
         switch(currentWiFiState){
             case WiFiState::Connected:
-            Serial.println("go to wifi connected Screen form app.cpp");
                 uiManager.goToScreen(Screen::WiFiConnected);
                 break;
             case WiFiState::Failed:
@@ -41,7 +44,7 @@ void App::update()
 
     if(event != InputEvent::None)
     {
-        uiManager.handleEvent(event, wifiManager.getNetworkCount());
+        uiManager.handleEvent(event,data);
     }
 
     switch(uiManager.getPendingAction())
@@ -64,16 +67,28 @@ void App::update()
 
         case UIAction::SelectWiFiNetwork:
             uiManager.setSelectedSSID(wifiManager.getSSIDString(uiManager.getSelectedNetworkIndex()));
-
-            Serial.println(displayData.uiState.selectedSSID);
             uiManager.goToScreen(Screen::WiFiPassword);
             uiManager.clearPendingAction();
             break;
+            
+        case UIAction::OpenMessage:
+        {   
+            uint8_t messageIndex = uiManager.getSelectedMessage();
+            const Message& msg = messageManager.getMessage(messageIndex);
+            displayData.messageViewerState->lineCount = TextUtils::wrapText(msg.body, displayData.messageViewerState->wrappedLines, 20);
+            data.messageViewLineCount = displayData.messageViewerState->lineCount;
+           
+            messageManager.markAsRead(messageIndex);
+            displayData.messageViewerState->scrollOffset = 0;
 
+            uiManager.goToScreen(Screen::MessageView);
+            uiManager.clearPendingAction();
+            break;
+        }
         default:
             break;
     }
-
+    
     wifiManager.update();
     uiManager.update();
 
@@ -89,7 +104,11 @@ void App::update()
     displayData.networkCount        = wifiManager.getNetworkCount();
     displayData.ssidList            = wifiManager.getSSIDList();
     displayData.ipAddress           = WiFi.localIP().toString();
-    
+    displayData.messageManager      = &messageManager;
+    //-----Build UIContext----------
+    data.messageCount = messageManager.getMessageCount();
+    data.networkCount = wifiManager.getNetworkCount();
+    //-----Update DisplayManager----
     if(uiManager.isDirty()){
         displayManager.update(displayData);
         uiManager.clearDirty();

@@ -1,5 +1,7 @@
 #include "UIManager.h"
-
+MessageViewerState& UIManager::getMessageViewerState(){
+    return messageViewerState;
+}
 const UIState& UIManager::getUIState() const{
     return uiState;
 }
@@ -31,7 +33,15 @@ void UIManager::goToHome()
 {
     changeScreen(Screen::Home);
 }
-
+void UIManager::setOpenedMessage(uint8_t selectedMessage){
+    uiState.openedMessage = selectedMessage;
+    messageViewerState.scrollOffset = 0;
+    // messageViewerState.lineCount = 0;
+    screenDirty = true;
+}
+uint8_t UIManager::getSelectedMessage(){
+    return uiState.selectedMessage;
+}
 void UIManager::onScanCompleted(int networkCount){
     uiState.availableNetworkCount = networkCount;
     uiState.selectedNetwork = 0;
@@ -153,6 +163,9 @@ void UIManager::openSelectedMenu()
             uiState.currentScreen = Screen::WiFi;
             break;
 
+        case HomeMenuItem::Messages:
+            goToScreen(Screen::Messages);
+            break;
         case HomeMenuItem::Settings:
             uiState.currentScreen = Screen::Settings;
             break;
@@ -171,7 +184,7 @@ void UIManager::openSelectedMenu()
 //============================================================
 //It handles the event
 // ===========================================================
-void UIManager::handleEvent(InputEvent event, uint8_t networkCount)
+void UIManager::handleEvent(InputEvent event, const UIData& data)
 {
     switch(uiState.currentScreen)
     {
@@ -184,7 +197,7 @@ void UIManager::handleEvent(InputEvent event, uint8_t networkCount)
             handleWiFiScreen(event);
             break;
         case Screen::WiFiScan:
-            handleWiFiScanScreen(event, networkCount);
+            handleWiFiScanScreen(event, data.networkCount);
             break;
         case Screen::WiFiPassword:
             handleWiFiPasswordScreen(event);
@@ -192,7 +205,12 @@ void UIManager::handleEvent(InputEvent event, uint8_t networkCount)
         case Screen::WiFiConnected:
             break;
         case Screen::WiFiFailed:
-            
+            break;
+        case Screen::Messages:
+            handleMessagesScreen(event, data.messageCount);
+            break;
+        case Screen::MessageView:
+            handleMessageViewScreen(event, data.messageViewLineCount);
             break;
         case Screen::Notifications:
             handleNotificationScreen(event);
@@ -304,7 +322,6 @@ void UIManager::handleWiFiScreen(InputEvent event)
         goToHome();
     }
 }
-
 //============================================================
 //Handle WiFi Scan Screen
 // ===========================================================
@@ -361,7 +378,6 @@ void UIManager::handleWiFiScanScreen(InputEvent event, uint8_t networkCount)
             break;
     }
 }
-
 //============================================================
 //Handle Password Screen
 // ===========================================================
@@ -485,6 +501,88 @@ void UIManager::handleWiFiPasswordScreen(InputEvent event){
             }
             screenDirty = true;
             break;
+    }
+}
+//============================================================
+//Handle Messages Screen
+// ===========================================================
+void UIManager::handleMessagesScreen(InputEvent event, uint8_t messageCount){
+    switch(event){
+        case InputEvent::EncoderCW:
+        {
+            if(messageCount == 0)
+                break;
+            int item = uiState.selectedMessage;
+            item++;
+            if(item > messageCount -1){
+                item = 0;
+            }
+            uiState.selectedMessage = item;
+            updateVisibleWindow(uiState.selectedMessage, uiState.firstVisibleMessage);
+            screenDirty = true;
+            break;
+        }
+        case InputEvent::EncoderCCW:
+        {
+            if(messageCount == 0)
+                break;
+            int item = uiState.selectedMessage;
+            item--;
+            if(item < 0){
+                item = messageCount -1;
+            }
+            uiState.selectedMessage = item;
+            updateVisibleWindow(uiState.selectedMessage, uiState.firstVisibleMessage);
+            screenDirty = true;
+            break;
+        }
+        case InputEvent::ButtonClick:
+        {
+            setOpenedMessage(uiState.selectedMessage);
+            pendingAction = UIAction::OpenMessage;
+            break;
+        }
+        case InputEvent::ButtonLongPress:
+            goToScreen(Screen::Home);
+            break;
+        default:
+            break;
+    }
+}
+//============================================================
+//Handle Message View Screen
+// ===========================================================
+void UIManager::handleMessageViewScreen(InputEvent event, uint8_t messageViewLineCount){
+    switch(event){
+        case InputEvent::EncoderCW:
+        //messageViewerState.lineCount > MESSAGE_VIEW_VISIBLE_LINES &&
+        Serial.println("Message scroll offset");
+        Serial.println(messageViewerState.scrollOffset);
+        Serial.println("---------------------------------");
+        Serial.println(messageViewerState.lineCount);
+           Serial.println("---------------------------------");
+            if(messageViewerState.scrollOffset + 3 < messageViewLineCount){
+                messageViewerState.scrollOffset++;
+                Serial.println("Scroll Offset: " + String(messageViewerState.scrollOffset));
+                screenDirty = true;
+            }
+            break;
+        case InputEvent::EncoderCCW:
+         Serial.println(messageViewerState.scrollOffset);
+            if(messageViewerState.scrollOffset > 0){
+                messageViewerState.scrollOffset--;
+                Serial.println("Scroll Offset: " + String(messageViewerState.scrollOffset));
+                screenDirty = true;
+            }
+            break;
+        case InputEvent::ButtonClick:
+            break;
+        case InputEvent::ButtonLongPress:
+            goToScreen(Screen::Messages);
+            break;
+        default:
+            break;
+
     }
 }
 //============================================================

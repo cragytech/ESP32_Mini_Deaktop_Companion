@@ -7,6 +7,7 @@
 #include "WiFiManager.h"
 #include "DisplayData.h"
 #include "KeyboardLayout.h"
+#include "UIData.h"
 
 
 class UIManager
@@ -14,7 +15,7 @@ class UIManager
 public:
     void begin();
     void update();
-    void handleEvent(InputEvent event, uint8_t networkCount);
+    void handleEvent(InputEvent event, const UIData& data);
     bool isDirty() const;
     void clearDirty();
     void goToScreen(Screen screen);
@@ -28,12 +29,19 @@ public:
 
     UIAction getPendingAction();
     void clearPendingAction();
+
+    u8_t getSelectedMessage();
+    void setOpenedMessage(uint8_t selectedMessage);
+    MessageViewerState& getMessageViewerState();
+
 private:
 
     void handleHomeScreen(InputEvent event);
     void handleWiFiScreen(InputEvent event);
     void handleWiFiScanScreen(InputEvent event, uint8_t networkCount);
     void handleWiFiPasswordScreen(InputEvent event);
+    void handleMessagesScreen(InputEvent event, uint8_t messageCount);
+    void handleMessageViewScreen(InputEvent event, uint8_t messageViewLineCount);
     void handleNotificationScreen(InputEvent event);
     void handleSettingsScreen(InputEvent event);
     void handleAboutScreen(InputEvent event);
@@ -48,9 +56,12 @@ private:
     uint8_t getCharacterCount() const;
     bool screenDirty = true;
     UIState uiState;
+    MessageViewerState messageViewerState;
     DisplayData data;
     UIAction pendingAction = UIAction::None;
 
     unsigned long screenEnterTime;
+
+    uint8_t MESSAGE_VIEW_VISIBLE_LINES = 3;
 
 };

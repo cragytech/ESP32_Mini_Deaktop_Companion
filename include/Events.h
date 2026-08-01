@@ -20,7 +20,8 @@ enum class Screen
     WiFiConnecting,
     WiFiConnected,
     WiFiFailed,
-    messages,
+    Messages,
+    MessageView,
     Settings,
     About
 };
@@ -55,7 +56,8 @@ enum class UIAction{
     StartWiFiScan,
     ConnectWiFi,
     DisconnectWiFi,
-    SelectWiFiNetwork
+    SelectWiFiNetwork,
+    OpenMessage
 };
 enum class KeyboardMode{
     UpperCase,
