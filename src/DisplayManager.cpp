@@ -244,7 +244,6 @@ void DisplayManager::drawWiFiScan(const DisplayData& data){
 
     if(data.wifiScanning){
         display.setCursor(0,20);
-        // display.getTextBounds()
         display.println("Scanning.....");
         return;
     }
@@ -348,7 +347,8 @@ void DisplayManager::drawMessages(const DisplayData& data){
         else
             display.print("  ");
 
-        display.println(msg.title);
+        display.print(msg.title);
+            display.println(msg.isRead ? " " : " * ");
     }
 }
 //============================================================
@@ -369,7 +369,7 @@ void DisplayManager::drawMessageView(const DisplayData& data){
     display.setTextSize(1);
     display.setCursor(0,0);
     display.print(msg.title);
-    display.println(msg.isRead ? " *" : "  ");
+    display.println(msg.isRead ? " " : " * ");
     drawStatusBar();
 
     display.setCursor(0,15);

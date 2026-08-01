@@ -16,8 +16,8 @@ void App::update()
 {
     DisplayData displayData;
     UIData data;
-
-       displayData.messageViewerState  = &uiManager.getMessageViewerState();   // without passign it as a pointer i have to face lot of issue
+    
+    displayData.messageViewerState  = &uiManager.getMessageViewerState();   // without passign it as a pointer i have to face lot of issue
     inputManager.update();
     InputEvent event = inputManager.getEvent();
     
@@ -30,7 +30,6 @@ void App::update()
     if(currentWiFiState != lastWiFiState){
         switch(currentWiFiState){
             case WiFiState::Connected:
-            Serial.println("go to wifi connected Screen form app.cpp");
                 uiManager.goToScreen(Screen::WiFiConnected);
                 break;
             case WiFiState::Failed:
@@ -74,23 +73,14 @@ void App::update()
             
         case UIAction::OpenMessage:
         {   
-            const Message& msg = messageManager.getMessage(uiManager.getSelectedMessage());
+            uint8_t messageIndex = uiManager.getSelectedMessage();
+            const Message& msg = messageManager.getMessage(messageIndex);
             displayData.messageViewerState->lineCount = TextUtils::wrapText(msg.body, displayData.messageViewerState->wrappedLines, 20);
             data.messageViewLineCount = displayData.messageViewerState->lineCount;
-            Serial.print("from app.cpp");
-            Serial.println(displayData.messageViewerState->wrappedLines[0]);
-        
-            messageManager.markAsRead(uiManager.getUIState().openedMessage);
+           
+            messageManager.markAsRead(messageIndex);
             displayData.messageViewerState->scrollOffset = 0;
 
-            Serial.println("Before DisplayManager");
-            Serial.println(displayData.messageViewerState->lineCount);
-            for(int i=0;i<displayData.messageViewerState->lineCount;i++)
-            {
-                Serial.print(i);
-                Serial.print(" : ");
-                Serial.println(displayData.messageViewerState->wrappedLines[i]);
-            }
             uiManager.goToScreen(Screen::MessageView);
             uiManager.clearPendingAction();
             break;
@@ -99,13 +89,6 @@ void App::update()
             break;
     }
     
-   
-    // if(event != InputEvent::None)
-    // {
-    //     uiManager.handleEvent(event,data);
-    // }
-
-
     wifiManager.update();
     uiManager.update();
 
@@ -116,7 +99,6 @@ void App::update()
     }
     //-----Build DisplayData--------
     displayData.uiState             = uiManager.getUIState();
-    // displayData.messageViewerState  = uiManager.getMessageViewerState();
     displayData.wifiScanning        = wifiManager.isScanning();
     uiState.availableNetworkCount   = wifiManager.getNetworkCount();
     displayData.networkCount        = wifiManager.getNetworkCount();
@@ -126,7 +108,7 @@ void App::update()
     //-----Build UIContext----------
     data.messageCount = messageManager.getMessageCount();
     data.networkCount = wifiManager.getNetworkCount();
-
+    //-----Update DisplayManager----
     if(uiManager.isDirty()){
         displayManager.update(displayData);
         uiManager.clearDirty();

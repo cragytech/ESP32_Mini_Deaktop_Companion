@@ -9,14 +9,14 @@ void MessageManager::begin(){
         "Letter Box ",
         "Hello Ravi, This is a very long message for testing our OLED display and manu more thing i am doing with ai. ",
         "12:30",
-        true
+        false
     });
     addMessage({
         "Build",
         "AI",
         "chat gpt",
         "6:12",
-        true
+        false
 
     });
 }
@@ -67,10 +67,3 @@ uint8_t MessageManager::getUnreadMessageCount() const{
     }
     return count;
 }
-// bool MessageManager::isRead(uint8_t index) const
-// {
-//     if(index >= messageCount)
-//         return true;
-
-//     return messages[index].read;
-// }
