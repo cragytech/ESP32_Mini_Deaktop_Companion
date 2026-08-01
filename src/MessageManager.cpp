@@ -16,7 +16,7 @@ void MessageManager::begin(){
         "AI",
         "chat gpt",
         "6:12",
-        false
+        true
 
     });
 }
@@ -59,3 +59,18 @@ bool MessageManager::deleteMessage(uint8_t index){
     messageCount--;
     return true;
 }
+uint8_t MessageManager::getUnreadMessageCount() const{
+    uint8_t count = 0;
+    for(uint8_t i = 0; i < messageCount; i++){
+        if(!messages[i].isRead)
+            count++;
+    }
+    return count;
+}
+// bool MessageManager::isRead(uint8_t index) const
+// {
+//     if(index >= messageCount)
+//         return true;
+
+//     return messages[index].read;
+// }

@@ -17,6 +17,7 @@ class MessageManager{
         const Message& getMessage(uint8_t index) const;
         void markAsRead(uint8_t index);
         bool hasUnreadMessaged() const;
+        uint8_t getUnreadMessageCount() const;
 
     private:
         Message messages[Max_MESSAGES];

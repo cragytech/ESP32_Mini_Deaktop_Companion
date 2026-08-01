@@ -1,5 +1,5 @@
 #include "UIManager.h"
-const MessageViewerState& UIManager::getMessageViewerState() const{
+MessageViewerState& UIManager::getMessageViewerState(){
     return messageViewerState;
 }
 const UIState& UIManager::getUIState() const{
@@ -34,8 +34,10 @@ void UIManager::goToHome()
     changeScreen(Screen::Home);
 }
 void UIManager::setOpenedMessage(uint8_t selectedMessage){
-
-
+    uiState.openedMessage = selectedMessage;
+    messageViewerState.scrollOffset = 0;
+    // messageViewerState.lineCount = 0;
+    screenDirty = true;
 }
 uint8_t UIManager::getSelectedMessage(){
     return uiState.selectedMessage;
@@ -208,7 +210,7 @@ void UIManager::handleEvent(InputEvent event, const UIData& data)
             handleMessagesScreen(event, data.messageCount);
             break;
         case Screen::MessageView:
-            handleMessageViewScreen(event);
+            handleMessageViewScreen(event, data.messageViewLineCount);
             break;
         case Screen::Notifications:
             handleNotificationScreen(event);
@@ -536,7 +538,7 @@ void UIManager::handleMessagesScreen(InputEvent event, uint8_t messageCount){
         }
         case InputEvent::ButtonClick:
         {
-            uiState.openedMessage = uiState.selectedMessage;
+            setOpenedMessage(uiState.selectedMessage);
             pendingAction = UIAction::OpenMessage;
             break;
         }
@@ -550,17 +552,26 @@ void UIManager::handleMessagesScreen(InputEvent event, uint8_t messageCount){
 //============================================================
 //Handle Message View Screen
 // ===========================================================
-void UIManager::handleMessageViewScreen(InputEvent event){
+void UIManager::handleMessageViewScreen(InputEvent event, uint8_t messageViewLineCount){
     switch(event){
         case InputEvent::EncoderCW:
-            if(messageViewerState.scrollOffset < messageViewerState.lineCount - 3){
+        //messageViewerState.lineCount > MESSAGE_VIEW_VISIBLE_LINES &&
+        Serial.println("Message scroll offset");
+        Serial.println(messageViewerState.scrollOffset);
+        Serial.println("---------------------------------");
+        Serial.println(messageViewerState.lineCount);
+           Serial.println("---------------------------------");
+            if(messageViewerState.scrollOffset + 3 < messageViewLineCount){
                 messageViewerState.scrollOffset++;
+                Serial.println("Scroll Offset: " + String(messageViewerState.scrollOffset));
                 screenDirty = true;
             }
             break;
         case InputEvent::EncoderCCW:
+         Serial.println(messageViewerState.scrollOffset);
             if(messageViewerState.scrollOffset > 0){
                 messageViewerState.scrollOffset--;
+                Serial.println("Scroll Offset: " + String(messageViewerState.scrollOffset));
                 screenDirty = true;
             }
             break;

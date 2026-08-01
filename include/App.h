@@ -24,5 +24,5 @@ private:
     MessageManager messageManager;
     // MessageViewerState messageViewerState;
     UIData data;
-    DisplayData displayData;
+    // DisplayData displayData;
 };

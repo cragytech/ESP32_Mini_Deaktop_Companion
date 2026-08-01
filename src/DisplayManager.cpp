@@ -368,7 +368,8 @@ void DisplayManager::drawMessageView(const DisplayData& data){
 
     display.setTextSize(1);
     display.setCursor(0,0);
-    display.println(msg.title);
+    display.print(msg.title);
+    display.println(msg.isRead ? " *" : "  ");
     drawStatusBar();
 
     display.setCursor(0,15);
@@ -377,29 +378,27 @@ void DisplayManager::drawMessageView(const DisplayData& data){
     display.setCursor(70,15);
     display.println(msg.timestamp);
 
-Serial.println("Inside DisplayManager");
+    Serial.println("Inside DisplayManager");
 
-for(int i=0;i<data.messageViewerState.lineCount;i++)
-{
-    Serial.print(i);
-    Serial.print(" : ");
-    Serial.println(data.messageViewerState.wrappedLines[i]);
-}
-
-    for(uint8_t i = 0; i < 4; i++){
-        uint8_t line = data.messageViewerState.scrollOffset + i;
-        
-        if(line >= data.messageViewerState.lineCount)
-            break;
-        display.setCursor(0, 28 + i*10);
-        display.println(data.messageViewerState.wrappedLines[line]);
+    for(int i=0;i<data.messageViewerState->lineCount;i++)
+    {
+        Serial.print(i);
+        Serial.print(" : ");
+        Serial.println(data.messageViewerState->wrappedLines[i]);
     }
-//     display.setCursor(0,30);
-//     display.println(msg.body);
 
-    Serial.println(msg.body);
-    Serial.println(data.messageViewerState.wrappedLines[0]);
-    Serial.println("message finished");
+    for(uint8_t i = 0; i < 3; i++){
+        uint8_t line = data.messageViewerState->scrollOffset + i;
+        Serial.print("form DisplayManager scroll offset");
+        Serial.println(data.messageViewerState->scrollOffset);
+        Serial.print("form DisplayManager line count");
+        Serial.println(data.messageViewerState->lineCount);
+
+        if(line >= data.messageViewerState->lineCount)
+            break;
+        display.setCursor(0, 26 + i*10);
+        display.println(data.messageViewerState->wrappedLines[line]);
+    }
 }
 
 void DisplayManager::drawNotifications(){

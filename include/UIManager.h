@@ -32,7 +32,7 @@ public:
 
     u8_t getSelectedMessage();
     void setOpenedMessage(uint8_t selectedMessage);
-    const MessageViewerState& getMessageViewerState() const;
+    MessageViewerState& getMessageViewerState();
 
 private:
 
@@ -41,7 +41,7 @@ private:
     void handleWiFiScanScreen(InputEvent event, uint8_t networkCount);
     void handleWiFiPasswordScreen(InputEvent event);
     void handleMessagesScreen(InputEvent event, uint8_t messageCount);
-    void handleMessageViewScreen(InputEvent envet);
+    void handleMessageViewScreen(InputEvent event, uint8_t messageViewLineCount);
     void handleNotificationScreen(InputEvent event);
     void handleSettingsScreen(InputEvent event);
     void handleAboutScreen(InputEvent event);
@@ -61,5 +61,7 @@ private:
     UIAction pendingAction = UIAction::None;
 
     unsigned long screenEnterTime;
+
+    uint8_t MESSAGE_VIEW_VISIBLE_LINES = 3;
 
 };
