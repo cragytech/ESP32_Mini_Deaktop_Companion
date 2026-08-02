@@ -361,15 +361,10 @@ void DisplayManager::drawMessageView(const DisplayData& data){
         return;
 
     const Message& msg =  manager->getMessage(data.uiState.openedMessage);
-    Serial.println(data.uiState.openedMessage);
-    // String wrapped[MAX_WRAP_LINES];
-    
-    // uint8_t totalLines = TextUtils::wrapText(msg.body, wrapped, 20);
 
     display.setTextSize(1);
     display.setCursor(0,0);
-    display.print(msg.title);
-    display.println(msg.isRead ? " " : " * ");
+    display.println(msg.title);
     drawStatusBar();
 
     display.setCursor(0,15);
@@ -378,21 +373,8 @@ void DisplayManager::drawMessageView(const DisplayData& data){
     display.setCursor(70,15);
     display.println(msg.timestamp);
 
-    Serial.println("Inside DisplayManager");
-
-    for(int i=0;i<data.messageViewerState->lineCount;i++)
-    {
-        Serial.print(i);
-        Serial.print(" : ");
-        Serial.println(data.messageViewerState->wrappedLines[i]);
-    }
-
     for(uint8_t i = 0; i < 3; i++){
         uint8_t line = data.messageViewerState->scrollOffset + i;
-        Serial.print("form DisplayManager scroll offset");
-        Serial.println(data.messageViewerState->scrollOffset);
-        Serial.print("form DisplayManager line count");
-        Serial.println(data.messageViewerState->lineCount);
 
         if(line >= data.messageViewerState->lineCount)
             break;

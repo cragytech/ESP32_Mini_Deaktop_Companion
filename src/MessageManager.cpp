@@ -4,21 +4,21 @@ MessageManager::MessageManager(){
     messageCount = 0;
 }
 void MessageManager::begin(){
-    addMessage({
-        "welcome",
-        "Letter Box ",
-        "Hello Ravi, This is a very long message for testing our OLED display and manu more thing i am doing with ai. ",
-        "12:30",
-        false
-    });
-    addMessage({
-        "Build",
-        "AI",
-        "chat gpt",
-        "6:12",
-        false
+    // addMessage({
+    //     "welcome",
+    //     "Letter Box ",
+    //     "Hello Ravi, This is a very long message for testing our OLED display and manu more thing i am doing with ai. ",
+    //     "12:30",
+    //     false
+    // });
+    // addMessage({
+    //     "Build",
+    //     "AI",
+    //     "chat gpt",
+    //     "6:12",
+    //     false
 
-    });
+    // });
 }
 void MessageManager::update(){
 

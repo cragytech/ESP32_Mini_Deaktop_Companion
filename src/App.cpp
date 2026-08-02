@@ -30,6 +30,8 @@ void App::update()
     if(currentWiFiState != lastWiFiState){
         switch(currentWiFiState){
             case WiFiState::Connected:
+                firebaseManager.begin();
+                firebaseManager.fetchMessages(messageManager);
                 uiManager.goToScreen(Screen::WiFiConnected);
                 break;
             case WiFiState::Failed:
@@ -91,6 +93,7 @@ void App::update()
     
     wifiManager.update();
     uiManager.update();
+    firebaseManager.update();
 
     //-----Scan completed-----------
     if(wifiManager.isScanComplete()){

@@ -7,7 +7,7 @@
 #include "UIState.h"
 #include "MessageManager.h"
 #include "UIData.h"
-
+#include "FirebaseManager.h"
 class App
 {
 public:
@@ -22,6 +22,7 @@ private:
     WiFiState lastWiFiState = WiFiState::Idle;
     UIState uiState;
     MessageManager messageManager;
+    FirebaseManager firebaseManager;
     // MessageViewerState messageViewerState;
     UIData data;
     // DisplayData displayData;
