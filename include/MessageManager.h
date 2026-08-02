@@ -11,6 +11,7 @@ class MessageManager{
         void begin();
         void update();
         bool addMessage(const Message& message);
+        bool addOrUpdateMessage(const Message& message);
         bool deleteMessage(uint8_t index);
         void clearMessage();
         uint8_t getMessageCount() const;
@@ -20,6 +21,7 @@ class MessageManager{
         uint8_t getUnreadMessageCount() const;
 
     private:
+        Message* findMessageById(const String& messageId);
         Message messages[Max_MESSAGES];
         uint8_t messageCount;
 };

@@ -4,6 +4,7 @@
 
 struct Message
 {
+    String id;
     String sender;
     String title;
     String body;

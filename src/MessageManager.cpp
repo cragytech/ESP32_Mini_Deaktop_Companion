@@ -30,6 +30,30 @@ bool MessageManager::addMessage(const Message& message){
     messages[messageCount++] = message;
     return true;
 }
+
+Message* MessageManager::findMessageById(const String& messageId){
+    for(uint8_t i = 0; i < messageCount; i++){
+        if(messages[i].id == messageId)
+            return &messages[i];
+    }
+    return nullptr;
+}
+
+bool MessageManager::addOrUpdateMessage(const Message& message){
+    if(message.id.length() == 0)
+        return false;
+
+    Message* existing = findMessageById(message.id);
+    if(existing){
+        bool wasRead = existing->isRead;
+        *existing = message;
+        existing->isRead = wasRead;
+        return true;
+    }
+
+    return addMessage(message);
+}
+
 uint8_t MessageManager::getMessageCount() const{
     return messageCount;
 }

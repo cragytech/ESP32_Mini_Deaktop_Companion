@@ -95,6 +95,17 @@ void App::update()
     uiManager.update();
     firebaseManager.update();
 
+    static Screen lastScreen = Screen::Splash;
+    Screen currentScreen = uiManager.getUIState().currentScreen;
+    if(currentScreen == Screen::Messages && lastScreen != Screen::Messages)
+    {
+        if(firebaseManager.isReady())
+        {
+            firebaseManager.fetchMessages(messageManager);
+        }
+    }
+    lastScreen = currentScreen;
+
     //-----Scan completed-----------
     if(wifiManager.isScanComplete()){
         uiManager.onScanCompleted(wifiManager.getNetworkCount());

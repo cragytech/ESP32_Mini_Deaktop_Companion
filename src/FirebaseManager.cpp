@@ -85,19 +85,18 @@ bool FirebaseManager::fetchMessages(MessageManager &messageManager)
         return false;
     }
 
-    messageManager.clearMessage();
-
     for (JsonPair pair : doc.as<JsonObject>())
     {
         JsonObject msg = pair.value().as<JsonObject>();
         Message message{
+            String(pair.key().c_str()),
             msg["sender"].as<String>(),
             msg["title"].as<String>(),
             msg["body"].as<String>(),
             msg["timestamp"].as<String>(),
             false
         };
-        messageManager.addMessage(message);
+        messageManager.addOrUpdateMessage(message);
     }
 
     Serial.print("Fetched messages from Firebase: ");
