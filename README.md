@@ -272,13 +272,13 @@ Project images, PCB photographs, enclosure designs, and UI screenshots can be ad
 
 Example:
 
-```markdown
+
 ## 📸 Gallery
 
 ![Letter-Box](Images-and-videos/Breadboard-prototype-03.jpeg)
 
 ![OLED UI](Images-and-videos/Home-screen.jpeg)
-```
+
 ---
 
 # Contributing
