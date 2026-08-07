@@ -370,7 +370,7 @@ void DisplayManager::drawMessageView(const DisplayData& data){
     display.setCursor(0,15);
     display.println(msg.sender);
 
-    display.setCursor(70,15);
+    display.setCursor(53,0);
     display.println(msg.timestamp);
 
     for(uint8_t i = 0; i < 3; i++){

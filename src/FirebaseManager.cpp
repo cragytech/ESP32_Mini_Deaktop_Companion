@@ -90,8 +90,8 @@ bool FirebaseManager::fetchMessages(MessageManager &messageManager)
         JsonObject msg = pair.value().as<JsonObject>();
         Message message{
             String(pair.key().c_str()),
-            msg["sender"].as<String>(),
             msg["title"].as<String>(),
+            msg["sender"].as<String>(),
             msg["body"].as<String>(),
             msg["timestamp"].as<String>(),
             false
