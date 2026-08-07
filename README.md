@@ -1,3 +1,7 @@
+
+
+https://github.com/user-attachments/assets/0a8280b8-c69b-4650-bc4f-6b4831a8e234
+
 # 📬 Letter-Box
 
 > A smart connected messaging box built around the ESP32, OLED display, rotary encoder, Wi-Fi, and Firebase.
@@ -278,6 +282,10 @@ Example:
 ![Letter-Box](Images-and-videos/Breadboard-prototype-03.jpeg)
 
 ![OLED UI](Images-and-videos/Home-screen.jpeg)
+
+https://github.com/user-attachments/assets/82d6203b-90d0-4410-a2d5-55f14a17d691
+
+
 
 ---
 
