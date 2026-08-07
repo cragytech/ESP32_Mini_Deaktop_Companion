@@ -1,7 +1,3 @@
-
-
-https://github.com/user-attachments/assets/0a8280b8-c69b-4650-bc4f-6b4831a8e234
-
 # 📬 Letter-Box
 
 > A smart connected messaging box built around the ESP32, OLED display, rotary encoder, Wi-Fi, and Firebase.
@@ -87,7 +83,7 @@ The ESP32 handles:
 
 ---
 
-# 🔄 How Letter-Box Works
+#  How Letter-Box Works
 
 When a new message becomes available:
 
@@ -269,13 +265,6 @@ Possible future improvements include:
 * Smooth controll without lag
 
 ---
-
-# 📸 Project Images
-
-Project images, PCB photographs, enclosure designs, and UI screenshots can be added here.
-
-Example:
-
 
 ## 📸 Gallery
 
