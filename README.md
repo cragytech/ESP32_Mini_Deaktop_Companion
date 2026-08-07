@@ -278,8 +278,6 @@ Example:
 ![Letter-Box](Images-and-videos/Breadboard-prototype-03.jpeg)
 
 ![OLED UI](Images-and-videos/Home-screen.jpeg)
-
-![Animation](Images-and-videos/New-message-arive.mp4)
 ```
 ---
 
