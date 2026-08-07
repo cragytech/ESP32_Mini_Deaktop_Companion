@@ -2,6 +2,7 @@
 
 #include "UIState.h"
 #include "MessageManager.h"
+#include "AnimationManager.h"
 
 #include <Arduino.h>
 #include <stdint.h>
@@ -17,4 +18,5 @@ struct DisplayData
     String ipAddress;
 
     MessageManager* messageManager = nullptr;
+    AnimationManager* animationManager = nullptr;
 };

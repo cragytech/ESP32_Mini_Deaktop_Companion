@@ -39,16 +39,46 @@ Message* MessageManager::findMessageById(const String& messageId){
     return nullptr;
 }
 
+Message* MessageManager::findMessageBySender(const String& sender){
+    if(sender.length() == 0)
+        return nullptr;
+
+    for(uint8_t i = 0; i < messageCount; i++){
+        if(messages[i].sender == sender)
+            return &messages[i];
+    }
+    return nullptr;
+}
+
 bool MessageManager::addOrUpdateMessage(const Message& message){
-    if(message.id.length() == 0)
+    if(message.sender.length() == 0)
         return false;
 
-    Message* existing = findMessageById(message.id);
+    Message* existing = nullptr;
+    if(message.id.length() > 0){
+        existing = findMessageById(message.id);
+    }
+
+    if(existing == nullptr){
+        existing = findMessageBySender(message.sender);
+    }
+
     if(existing){
         bool wasRead = existing->isRead;
-        *existing = message;
-        existing->isRead = wasRead;
-        return true;
+        bool changed = (
+            existing->id != message.id ||
+            existing->title != message.title ||
+            existing->sender != message.sender ||
+            existing->body != message.body ||
+            existing->timestamp != message.timestamp
+        );
+
+        if(changed){
+            *existing = message;
+            existing->isRead = !wasRead;        // Mark as unread if it was previously read
+            return true;
+        }
+        return false;
     }
 
     return addMessage(message);

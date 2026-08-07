@@ -404,11 +404,33 @@ void DisplayManager::drawAbout(){
     display.println("Version 1.0");
 }
 void DisplayManager::update(const DisplayData& data){
-    display.clearDisplay();
+    // If an animation is playing, show a blank screen with only the animation
+    if(data.animationManager != nullptr && data.animationManager->isPlaying()){
+        display.clearDisplay();
+        int16_t x = (SCREEN_WIDTH - data.animationManager->getWidth()) / 2;
+        int16_t y = (SCREEN_HIGHT - data.animationManager->getHeight()) / 2;
+        drawAnimation(data.animationManager, x, y);
+        display.display();
+        return;
+    }
 
+    display.clearDisplay();
     drawStatusBar();
     drawContent(data);
     drawFooter(data.uiState.currentScreen);
+    drawAnimation(data.animationManager, 40, 8);
 
     display.display();
+}
+
+void DisplayManager::drawAnimation(AnimationManager* animation, int16_t x, int16_t y)
+{
+    if(animation == nullptr || !animation->isPlaying())
+        return;
+
+    const uint8_t* frame = animation->getCurrentFrame();
+    if(frame == nullptr)
+        return;
+
+    display.drawBitmap(x, y, frame, animation->getWidth(), animation->getHeight(), SSD1306_WHITE);
 }

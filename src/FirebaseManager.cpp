@@ -85,6 +85,7 @@ bool FirebaseManager::fetchMessages(MessageManager &messageManager)
         return false;
     }
 
+    bool newMessageAdded = false;
     for (JsonPair pair : doc.as<JsonObject>())
     {
         JsonObject msg = pair.value().as<JsonObject>();
@@ -96,12 +97,15 @@ bool FirebaseManager::fetchMessages(MessageManager &messageManager)
             msg["timestamp"].as<String>(),
             false
         };
-        messageManager.addOrUpdateMessage(message);
+        if (messageManager.addOrUpdateMessage(message))
+        {
+            newMessageAdded = true;
+        }
     }
 
     Serial.print("Fetched messages from Firebase: ");
     Serial.println(messageManager.getMessageCount());
-    return true;
+    return newMessageAdded;
 }
 
 void FirebaseManager::update()

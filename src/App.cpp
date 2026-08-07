@@ -10,7 +10,7 @@ void App::begin()
     messageManager.begin();
     displayManager.setWiFiManager(&wifiManager);
     Message msg;
-
+    lastActivityTime = millis();
 }
 void App::update()
 {
@@ -31,7 +31,13 @@ void App::update()
         switch(currentWiFiState){
             case WiFiState::Connected:
                 firebaseManager.begin();
-                firebaseManager.fetchMessages(messageManager);
+                if(firebaseManager.fetchMessages(messageManager))
+                {
+                    // defer playing animation until device is idle
+                    animationPending = true;
+                    lastActivityTime = millis();
+                }
+                lastMessageFetchTime = millis();
                 uiManager.goToScreen(Screen::WiFiConnected);
                 break;
             case WiFiState::Failed:
@@ -46,7 +52,14 @@ void App::update()
 
     if(event != InputEvent::None)
     {
+        if(animationManager.isPlaying())
+        {
+            animationManager.stop();
+            uiManager.goToScreen(screenBeforeAnimation);
+        }
         uiManager.handleEvent(event,data);
+        // reset idle timer on any user input
+        lastActivityTime = millis();
     }
 
     switch(uiManager.getPendingAction())
@@ -94,6 +107,18 @@ void App::update()
     wifiManager.update();
     uiManager.update();
     firebaseManager.update();
+    bool animationWasPlaying = animationManager.isPlaying();
+    animationManager.update();         
+
+    if(firebaseManager.isReady() && millis() - lastMessageFetchTime >= MESSAGE_FETCH_INTERVAL_MS)
+    {
+        lastMessageFetchTime = millis();
+        if(firebaseManager.fetchMessages(messageManager))
+        {
+            animationPending = true;
+            lastActivityTime = millis();
+        }
+    }
 
     static Screen lastScreen = Screen::Splash;
     Screen currentScreen = uiManager.getUIState().currentScreen;
@@ -101,7 +126,11 @@ void App::update()
     {
         if(firebaseManager.isReady())
         {
-            firebaseManager.fetchMessages(messageManager);
+            // if(firebaseManager.fetchMessages(messageManager))
+            // {
+            //     animationManager.play(&newMessageAnimation);
+            // }
+            lastMessageFetchTime = millis();
         }
     }
     lastScreen = currentScreen;
@@ -119,12 +148,25 @@ void App::update()
     displayData.ssidList            = wifiManager.getSSIDList();
     displayData.ipAddress           = WiFi.localIP().toString();
     displayData.messageManager      = &messageManager;
+    displayData.animationManager    = &animationManager;
     //-----Build UIContext----------
     data.messageCount = messageManager.getMessageCount();
     data.networkCount = wifiManager.getNetworkCount();
     //-----Update DisplayManager----
-    if(uiManager.isDirty()){
+    // if animation is pending and device idle, start it
+    if(animationPending && !animationManager.isPlaying()){
+        if(!uiManager.isDirty() && (millis() - lastActivityTime >= IDLE_BEFORE_ANIMATION_MS)){
+            screenBeforeAnimation = uiManager.getUIState().currentScreen;
+            animationManager.play(&newMessageAnimation);
+            animationPending = false;
+        }
+    }
+
+    if(uiManager.isDirty() || animationManager.isPlaying() || animationWasPlaying){
         displayManager.update(displayData);
-        uiManager.clearDirty();
+        if(!animationManager.isPlaying())
+        {
+            uiManager.clearDirty();
+        }
     }
 }

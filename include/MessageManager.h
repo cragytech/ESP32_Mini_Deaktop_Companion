@@ -22,6 +22,7 @@ class MessageManager{
 
     private:
         Message* findMessageById(const String& messageId);
+        Message* findMessageBySender(const String& sender);
         Message messages[Max_MESSAGES];
         uint8_t messageCount;
 };

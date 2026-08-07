@@ -8,6 +8,7 @@
 #include "UIState.h"
 #include "MessageManager.h"
 #include "TextUtils.h"
+#include "AnimationManager.h"
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -46,6 +47,7 @@ private:
     void drawList(const Menu& menu);
     void drawWiFiConnected(const DisplayData& data);
     void drawWiFiFailed();
+    void drawAnimation(AnimationManager* animation,int16_t x,int16_t y);
     String trimTextToFit(String text, int maxWidth);
     String trimTextFromLeft(const String& password, uint8_t maxChars);
     String getCurrentKeyboardMode(KeyboardMode KeyboardMode);

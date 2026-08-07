@@ -4,7 +4,7 @@
 #include <WiFiClientSecure.h>
 #include "ExampleFunctions.h"
 
-#include "secrets.h"
+#include "firebase_config.h"
 #include "MessageManager.h"
 
 class FirebaseManager {
